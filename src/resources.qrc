@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Forms/MainForm.qml</file>
+        <file>Forms/MainMenuToolbar.qml</file>
+    </qresource>
+</RCC>
