@@ -1,6 +1,46 @@
 <RCC>
     <qresource prefix="/">
-        <file>Forms/MainForm.qml</file>
-        <file>Forms/MainMenuToolbar.qml</file>
+        <file>Qml/MainForm.qml</file>
+        <file>Qml/MainMenuToolbar.qml</file>
+        <file>Qml/Elements/MainToolbar.qml</file>
+        <file>Qml/Forms/TvForm.qml</file>
+        <file>Qml/Forms/PlaylistManagerForm.qml</file>
+        <file>Qml/Elements/PlaylistManagerToolbar.qml</file>
+        <file>Qml/Elements/PlMngrLists.qml</file>
+        <file>Qml/Elements/HighLight.qml</file>
+        <file>Qml/ListView/PlaylistsView.qml</file>
+        <file>Qml/ListView/PlaylistsTbl.qml</file>
+        <file>Qml/ListView/PlFilesView.qml</file>
+        <file>Qml/Elements/Clock.qml</file>
+        <file>Qml/Elements/TabBtn.qml</file>
+        <file alias="tv_ico">../Graphic/tv.jpg</file>
+        <file>Qml/Ico/account_book-delay.ico</file>
+        <file>Qml/Ico/arrow_down.ico</file>
+        <file>Qml/Ico/arrow_up.ico</file>
+        <file>Qml/Ico/calendar.ico</file>
+        <file>Qml/Ico/clock.ico</file>
+        <file>Qml/Ico/equalizer.ico</file>
+        <file>Qml/Ico/favorite.ico</file>
+        <file>Qml/Ico/folder-add.ico</file>
+        <file>Qml/Ico/folder.ico</file>
+        <file>Qml/Ico/full_screen2.ico</file>
+        <file>Qml/Ico/gear.ico</file>
+        <file>Qml/Ico/layers-edit.ico</file>
+        <file>Qml/Ico/link-add.ico</file>
+        <file>Qml/Ico/link.ico</file>
+        <file>Qml/Ico/list.ico</file>
+        <file>Qml/Ico/move_down.ico</file>
+        <file>Qml/Ico/move_up.ico</file>
+        <file>Qml/Ico/rotate.ico</file>
+        <file>Qml/Ico/tv.ico</file>
+        <file>Qml/Elements/ToolBtn.qml</file>
+        <file>Qml/Ico/adjustment.png</file>
+        <file>Qml/Ico/calendar.png</file>
+        <file>Qml/Ico/dot-list.png</file>
+        <file>Qml/Ico/computer_off.png</file>
+        <file>Qml/Ico/69-display.png</file>
+        <file>Qml/Ico/83-calendar.bmp</file>
+        <file>Qml/Elements/PlFileLocation.qml</file>
+        <file>Qml/Elements/SureDialog.qml</file>
     </qresource>
 </RCC>

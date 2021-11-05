@@ -3,7 +3,7 @@
 
 #include "tvmish.h"
 
-TVmish::TVmish(QObject *parent, QGuiApplication *app) : QObject(parent), m_app(app)
+TVmish::TVmish(QString *appPath) : m_appPath(appPath)
 {
 //    m_url = "localhost";
 //#ifdef QT_DEBUG
@@ -24,8 +24,12 @@ bool TVmish::startApp()
 {
     db = new DataBase();
     if (db->connect()) {
-        mainContr = new MainController(this, m_app);
-        mainContr->loadMainForm();
+        sets = new Settings();
+        if (*m_appPath != sets->appPath())
+            sets->setAppPath(m_appPath);
+
+        mainContr = new MainController(db->db());
+        mainContr->loadMainForm();        
 
         return true;
     }

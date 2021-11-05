@@ -5,11 +5,13 @@
 #include <QQmlApplicationEngine>
 #include <QGuiApplication>
 
+#include "playlistcontroller.h"
+
 class MainController : public QObject
 {
     Q_OBJECT
 public:
-    explicit MainController(QObject *parent = nullptr, QGuiApplication *app = nullptr);
+    MainController(QSqlDatabase db);
     virtual ~MainController();
 
     void loadMainForm();
@@ -17,9 +19,20 @@ public:
 
 signals:
 
+public slots:
+    void openTvMode();
+    void openOptions();
+    void openPlaylistManager();
+    void openTvSchedule();
+    void openPlaylistChooser();
+
 private:
     QQmlApplicationEngine engine;
-    QGuiApplication *m_app;
+
+    QSqlDatabase m_db;
+    PlaylistController *plContr;
+
+
 
 };
 

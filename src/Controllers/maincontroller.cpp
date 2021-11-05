@@ -1,9 +1,15 @@
 #include <QtQml/QQmlEngine>
+#include <QQmlContext>
 
 
 #include "maincontroller.h"
 
-MainController::MainController(QObject *parent, QGuiApplication *app) : QObject(parent), m_app(app)
+#include "Models/playlistsmodel.h"
+#include "Models/plfilemodel.h"
+#include "Classes/playlists.h"
+#include "Classes/plfiles.h"
+
+MainController::MainController(QSqlDatabase db) : m_db(db)
 {
 
 }
@@ -15,9 +21,20 @@ MainController::~MainController()
 
 void MainController::loadMainForm()
 {
-    engine.load(QUrl(QStringLiteral("qrc:/Forms/MainForm.qml")));
+    qmlRegisterType<PlaylistsModel>("Playlists", 1, 0, "PlaylistsModel");
+    qmlRegisterUncreatableType<Playlists>("Playlists", 1, 0, "Playlists",
+                                          QStringLiteral("Playlists shouldn't be created in QML"));
+
+    qmlRegisterType<PlFilesModel>("Playlists", 1, 0, "PlFilesModel");
+    qmlRegisterUncreatableType<PlFiles>("Playlists", 1, 0, "PlFiles",
+                                          QStringLiteral("PlFiles shouldn't be created in QML"));
+
+    engine.load(QUrl(QStringLiteral("qrc:/Qml/MainForm.qml")));
     if (engine.rootObjects().isEmpty())
         qDebug() << "exit";
+
+    engine.rootContext()->setContextProperty(QStringLiteral("mainContr"), this);
+
 
 //    const QUrl url(QStringLiteral("qrc:/Forms/MainForm.qml"));
 //    QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
@@ -39,5 +56,32 @@ void MainController::loadMainForm()
 //    viewer->setSource(QUrl("qrc:/Forms/MainForm.qml"));
 //    viewer->setResizeMode(QQuickView::SizeRootObjectToView);
 ////    viewer->setColor(QColor("#404040"));
-//    viewer->show();
+    //    viewer->show();
+}
+
+void MainController::openTvMode()
+{
+
+}
+
+void MainController::openOptions()
+{
+
+}
+
+void MainController::openPlaylistManager()
+{
+    qDebug() << "opening plmanager";
+    plContr = new PlaylistController(&engine, m_db);
+    plContr->openPlaylistManager();
+}
+
+void MainController::openTvSchedule()
+{
+
+}
+
+void MainController::openPlaylistChooser()
+{
+
 }
