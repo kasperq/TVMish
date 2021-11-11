@@ -24,6 +24,7 @@ SOURCES += \
         Controllers/maincontroller.cpp \
         Controllers/playlistcontroller.cpp \
         DB/database.cpp \
+        DB/dbconnpool.cpp \
         Gateways/playlistgw.cpp \
         Gateways/plfilegw.cpp \
         Models/playlistsmodel.cpp \
@@ -42,6 +43,7 @@ HEADERS += \
     Controllers/maincontroller.h \
     Controllers/playlistcontroller.h \
     DB/database.h \
+    DB/dbconnpool.h \
     Gateways/playlistgw.h \
     Gateways/plfilegw.h \
     Models/playlistsmodel.h \
