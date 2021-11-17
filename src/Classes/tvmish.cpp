@@ -24,7 +24,7 @@ bool TVmish::startApp()
 {
     db = new DataBase();
     if (db->connect()) {
-        sets = new Settings();
+        sets = new Settings(db->db());
         if (*m_appPath != sets->appPath())
             sets->setAppPath(m_appPath);
 

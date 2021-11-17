@@ -10,14 +10,14 @@
 PlFiles::PlFiles(PlFileGW *plGW) : m_fileGw(plGW)
 {
     qDebug() << "constructor with params PlFiles";
-    m_sets = std::make_shared<Settings>();
+//    m_sets = std::make_shared<Settings>();
 }
 
 PlFiles::PlFiles(QObject *parent) : QObject(parent)
 {
     qDebug() << "constructor without params PlFiles";
     m_idPlaylist = 1;
-    m_sets = std::make_shared<Settings>();
+//    m_sets = std::make_shared<Settings>();
 }
 
 PlFiles *PlFiles::operator=(const PlFiles *orig)

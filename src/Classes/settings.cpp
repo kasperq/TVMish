@@ -1,6 +1,6 @@
 #include "settings.h"
 
-Settings::Settings()
+Settings::Settings(const QSqlDatabase &db) : m_db(db)
 {
     getSets();
 }
@@ -56,7 +56,7 @@ void Settings::countRows()
 
 void Settings::getSets()
 {
-    q_select = new QSqlQuery();
+    q_select = new QSqlQuery(m_db);
     q_select->prepare("select settings.app_dir, settings.current_pl_dir from settings ");
     q_select->exec();
     countRows();
@@ -71,7 +71,7 @@ void Settings::getSets()
 
 void Settings::modifySets()
 {
-    q_temp = new QSqlQuery();
+    q_temp = new QSqlQuery(m_db);
     q_temp->prepare("update settings "
                     "set app_dir = :app_dir, "
                     "current_pl_dir = :current_pl_dir ");

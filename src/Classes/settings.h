@@ -3,11 +3,12 @@
 
 #include <QString>
 #include <QSqlQuery>
+#include <QSqlDatabase>
 
 class Settings
 {
 public:
-    Settings();
+    Settings(const QSqlDatabase &db);
     virtual ~Settings();
 
     QString appPath();
@@ -21,6 +22,7 @@ private:
     uint m_rows;
     QString m_curPlDir;
 
+    QSqlDatabase m_db;
     QSqlQuery *q_select;
     QSqlQuery *q_temp;
 

@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QtSql/QSqlDatabase>
 
+#include <DB/dbconnpool.h>
+
 class DataBase : public QObject
 {
     Q_OBJECT
@@ -14,12 +16,14 @@ public:
 
     bool connect();
     bool disconnect();
+    bool disconnect(QSqlDatabase &db);
 
     QSqlDatabase db() const;
 
 private:
     QSqlDatabase m_db;
 
+//    static DBConnPool m_pool;
 };
 
 #endif // DATABASE_H
