@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 #endif
     QString appPath = app.applicationDirPath();
 
-    TVmish* tv = new TVmish(&appPath);
+    TVmish* tv = new TVmish(appPath);
     if (tv->startApp()){
         return app.exec();
     }

@@ -10,28 +10,28 @@ public:
     virtual ~PlFile();
 
     int idFile() const;
-    void setIdFile(int *idPlaylistFile);
+    void setIdFile(const int &value);
 
     int idPlaylist() const;
-    void setIdPlaylist(int *idPlaylist);
+    void setIdPlaylist(const int &value);
 
     QString fileName() const;
-    void setFileName(const QString *fileName);
+    void setFileName(const QString &value);
 
     QString filePath() const;
-    void setFilePath(const QString *filePath);
+    void setFilePath(const QString &value);
 
     QString filePathLocal() const;
-    void setFilePathLocal(const QString *filePathLocal);
+    void setFilePathLocal(const QString &value);
 
     int idFormat() const;
-    void setIdFormat(int *idFormat);
+    void setIdFormat(const int &value);
 
     bool isAvailable() const;
-    void setIsAvailable(bool *isAvailable);
+    void setIsAvailable(const bool &value);
 
     QString format() const;
-    void setFormat(const QString *format);
+    void setFormat(const QString &value);
 
 private:
     int m_idFile;

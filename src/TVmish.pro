@@ -29,7 +29,8 @@ SOURCES += \
         Gateways/plfilegw.cpp \
         Models/playlistsmodel.cpp \
         Models/plfilemodel.cpp \
-        Thread/playlistthread.cpp \
+        Thread/playlistgwthread.cpp \
+        Thread/fileworkerthread.cpp \
         main.cpp
 
 HEADERS += \
@@ -48,7 +49,8 @@ HEADERS += \
     Gateways/plfilegw.h \
     Models/playlistsmodel.h \
     Models/plfilemodel.h \
-    Thread/playlistthread.h
+    Thread/playlistgwthread.h \
+    Thread/fileworkerthread.h
 
 DISTFILES += \
     Qml/MainForm.qml

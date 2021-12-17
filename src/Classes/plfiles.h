@@ -4,7 +4,7 @@
 #include "./Classes/playlist.h"
 #include "./Gateways/plfilegw.h"
 #include "./Classes/settings.h"
-#include "./Thread/playlistthread.h"
+#include "./Thread/fileworkerthread.h"
 
 #include <QObject>
 #include <QVector>
@@ -19,17 +19,17 @@ class PlFiles : public QObject
     Q_PROPERTY(QString fileName READ fileName)
     Q_PROPERTY(QUrl curDir READ getCurDir WRITE setCurDir)
 
-public:
-    PlFiles(PlFileGW *plGW);
+public:    
     PlFiles(QObject *parent = nullptr);
-    PlFiles* operator=(const PlFiles* orig);
+    PlFiles(Settings &sets);
+//    PlFiles* operator=(const PlFiles* orig);
     virtual ~PlFiles();
 
     QVector<PlFile> items() const;
     bool setItemAt(int index, PlFile &item);
-    void addItem(int *idFile, int *idPlaylist, QString *fileName, QString *filePath, QString *filePathLocal,
-                 int *idFormat, bool *isAvailable, QString *format);
-
+    void addItem(const int &idFile, const int &idPlaylist, const QString &fileName, const QString &filePath,
+                 const QString &filePathLocal, const int &idFormat, const bool &isAvailable, const QString &format);
+    void clear();
     int rowCount() const;
     QString fileName() const;
 
@@ -40,6 +40,8 @@ public:
 
     QUrl getCurDir();
     void setCurDir(const QUrl &curDir);
+
+    void setSets(const Settings &value);
 
 
 signals:
@@ -53,10 +55,23 @@ signals:
     void itemChanged(int index);
     void rowCountChanged(int rows);
 
+    //signals for other classes who needs changes from current, f.e. DB
+    void itemEdited(const int &index, const int &idFile, const int &idPlaylist, const QString &fileName, const QString &filePath,
+                    const QString &filePathLocal, const int &idFormat, const bool &isAvailable);
+    void itemAppended(const int &index, const int &idPlaylist, const QString &fileName, const QString &filePath,
+                      const QString &filePathLocal, const int &idFormat, const bool &isAvailable);
+    void itemDeleted(const int &index, const int &idFile);
+    void checkFileExtension(const int &index, QString &fullFilePath, const QString &extension);
+    void extensionChecked(const int &index, QString &fullFilePath,
+                                    const QString &extension, const bool &isValid,
+                                    const int &idFormat, const QString &appPath);
+    void errorEmited(QString errorMsg);
+
+
 
 public slots:
     void open(int idPlaylist);
-    void addItem();
+    void appendNewItem();
     void addItemFromLocalFile(int index, QUrl filePath);
     void addItemFromUrl(int index, QUrl fileUrl);
     void removeCurrentItem(int index);
@@ -65,20 +80,28 @@ public slots:
     void selectFile();
     void copyFinished();
 
+    void setNewItemIdFile(const int &index, const int &idFile);
+    void addCopiedFileInfo(const QString &fileName, const QString &filePath, const QString &newFilePath,
+                    const QString &extension, const int &idFormat, const bool &isAvailable,
+                    const int &index);
+    void fileNotCopied(const QString &errorMsg);
+
+    void extensionChecked(const int &index, QString &fullFilePath, const QString &extension,
+                          const bool &isValid, const int &idFormat);
 
 private:
     QVector<PlFile> m_files;
-    PlFileGW *m_fileGw;
-    std::shared_ptr<Settings> m_sets;
-    PlaylistThread m_plThr;
+    std::shared_ptr< Settings > m_sets;
+    FileWorkerThread m_plThr;
 
     QString m_fileName;
     QStringList m_filesName;
     int m_idPlaylist;
     QString m_curDir;
 
-    bool isFormatValid(QString *format);
-    void copyLocalFile(QString *oldPath, QString *newPath, int *idFile);
+    bool isFormatValid(QString &format);
+    void copyLocalFile(QString &oldPath, QString &newPath);
+    void initConnections();
 
 
 };

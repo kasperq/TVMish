@@ -10,6 +10,11 @@ DataBase::DataBase(QObject *parent) : QObject(parent)
 
 }
 
+DataBase::DataBase(DataBase &value)
+{
+
+}
+
 DataBase::~DataBase()
 {
 //    if (m_db->isOpen())
@@ -61,7 +66,7 @@ bool DataBase::disconnect(QSqlDatabase &db)
     return true;
 }
 
-QSqlDatabase DataBase::db() const
+QSqlDatabase DataBase::db()
 {
     return DBConnPool::openConnection();
 //    return m_pool.openConnection();

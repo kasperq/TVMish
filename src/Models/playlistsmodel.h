@@ -13,9 +13,8 @@ class PlaylistsModel : public QAbstractListModel
     Q_PROPERTY(int rowCount READ rowCount)
 
 public:
-    explicit PlaylistsModel(PlaylistGW *plGw, Playlists *plLists);
     PlaylistsModel(QObject *parent = nullptr);
-    PlaylistsModel(PlaylistGW *plGw);
+    virtual ~PlaylistsModel();
 
     enum {
         NaimRole = Qt::UserRole,
@@ -34,7 +33,6 @@ public:
     void setPlLists(Playlists *plLists);
 
 private:
-    PlaylistGW *m_plGw;
     Playlists *m_plLists;
 };
 

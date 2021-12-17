@@ -15,9 +15,9 @@ int PlFile::idFile() const
     return m_idFile;
 }
 
-void PlFile::setIdFile(int *idPlaylistFile)
+void PlFile::setIdFile(const int &value)
 {
-    m_idFile = *idPlaylistFile;
+    m_idFile = value;
 }
 
 int PlFile::idPlaylist() const
@@ -25,9 +25,9 @@ int PlFile::idPlaylist() const
     return m_idPlaylist;
 }
 
-void PlFile::setIdPlaylist(int *idPlaylist)
+void PlFile::setIdPlaylist(const int &value)
 {
-    m_idPlaylist = *idPlaylist;
+    m_idPlaylist = value;
 }
 
 QString PlFile::fileName() const
@@ -35,9 +35,9 @@ QString PlFile::fileName() const
     return m_fileName;
 }
 
-void PlFile::setFileName(const QString *fileName)
+void PlFile::setFileName(const QString &value)
 {
-    m_fileName = *fileName;
+    m_fileName = value;
 }
 
 QString PlFile::filePath() const
@@ -45,9 +45,9 @@ QString PlFile::filePath() const
     return m_filePath;
 }
 
-void PlFile::setFilePath(const QString *filePath)
+void PlFile::setFilePath(const QString &value)
 {
-    m_filePath = *filePath;
+    m_filePath = value;
 }
 
 QString PlFile::filePathLocal() const
@@ -55,9 +55,9 @@ QString PlFile::filePathLocal() const
     return m_filePathLocal;
 }
 
-void PlFile::setFilePathLocal(const QString *filePathLocal)
+void PlFile::setFilePathLocal(const QString &value)
 {
-    m_filePathLocal = *filePathLocal;
+    m_filePathLocal = value;
 }
 
 int PlFile::idFormat() const
@@ -65,9 +65,9 @@ int PlFile::idFormat() const
     return m_idFormat;
 }
 
-void PlFile::setIdFormat(int *idFormat)
+void PlFile::setIdFormat(const int &value)
 {
-    m_idFormat = *idFormat;
+    m_idFormat = value;
 }
 
 bool PlFile::isAvailable() const
@@ -75,9 +75,9 @@ bool PlFile::isAvailable() const
     return m_isAvailable;
 }
 
-void PlFile::setIsAvailable(bool *isAvailable)
+void PlFile::setIsAvailable(const bool &value)
 {
-    m_isAvailable = *isAvailable;
+    m_isAvailable = value;
 }
 
 QString PlFile::format() const
@@ -85,7 +85,7 @@ QString PlFile::format() const
     return m_format;
 }
 
-void PlFile::setFormat(const QString *format)
+void PlFile::setFormat(const QString &value)
 {
-    m_format = *format;
+    m_format = value;
 }

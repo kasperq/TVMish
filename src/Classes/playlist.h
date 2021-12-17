@@ -10,16 +10,16 @@ public:
     virtual ~Playlist();
 
     int idPlaylist() const;
-    void setIdPlaylist(int* idPlaylist);
+    void setIdPlaylist(const int& value);
 
     bool isCurrent() const;
-    void setIsCurrent(bool* isCurrent);
+    void setIsCurrent(const bool& value);
 
     QString naim() const;
-    void setNaim(QString* value);
+    void setNaim(const QString& value);
 
     unsigned int num() const;
-    void setNum(unsigned int *num);
+    void setNum(const uint& value);
 
 private:
     int m_idPlaylist;

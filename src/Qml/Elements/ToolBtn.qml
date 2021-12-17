@@ -70,9 +70,11 @@ ToolButton {
         id: mouseRegion
         anchors.fill: parent        
 
-        onClicked: btn_.clicked()
+        onClicked: {
+            btn_.clicked();
+        }
 
-        onPressed: {
+        onPressed: {            
             if (btn_.checkable && !btn_.checked) {
                 btn_.checked = true;
             } else {

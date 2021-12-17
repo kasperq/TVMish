@@ -14,6 +14,16 @@ MainController::MainController(QSqlDatabase db) : m_db(db)
 
 }
 
+//MainController::MainController()
+//{
+
+//}
+
+MainController::MainController(DataBase &datab)
+{
+    m_dataB = std::make_shared< DataBase > (datab);
+}
+
 MainController::~MainController()
 {
 //    delete viewer;
@@ -59,6 +69,11 @@ void MainController::loadMainForm()
     //    viewer->show();
 }
 
+//void MainController::setDb(DataBase &db)
+//{
+//    m_dataB = std::make_shared< DataBase > (db);
+//}
+
 void MainController::openTvMode()
 {
 
@@ -71,9 +86,11 @@ void MainController::openOptions()
 
 void MainController::openPlaylistManager()
 {
-    qDebug() << "opening plmanager";
-    plContr = new PlaylistController(&engine, m_db);
-    plContr->openPlaylistManager();
+//    qDebug() << "opening plmanager";
+//    plContr = new PlaylistController(&engine, m_db);
+//    plContr = PlaylistController(engine, *m_dataB);
+//    plContr = PlaylistController(new PlaylistController(engine, *m_dataB));
+    plContr.openPlaylistManager();
 }
 
 void MainController::openTvSchedule()

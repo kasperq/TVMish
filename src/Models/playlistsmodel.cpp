@@ -1,20 +1,15 @@
 #include "playlistsmodel.h"
 #include "./Classes/playlists.h"
 
-PlaylistsModel::PlaylistsModel(PlaylistGW *plGw, Playlists *plLists) : m_plGw(plGw), m_plLists(plLists)
-{
-    qDebug() << "constructor with params PlaylistsModel";
-}
-
 PlaylistsModel::PlaylistsModel(QObject *parent) : QAbstractListModel(parent)
 {
     qDebug() << "constructor without params PlaylistsModel";
     m_plLists = new Playlists();
 }
 
-PlaylistsModel::PlaylistsModel(PlaylistGW *plGw) : m_plGw(plGw)
+PlaylistsModel::~PlaylistsModel()
 {
-    m_plLists = new Playlists();
+    m_plLists = nullptr;
 }
 
 int PlaylistsModel::rowCount(const QModelIndex &parent) const
@@ -36,7 +31,6 @@ QVariant PlaylistsModel::data(const QModelIndex &index, int role) const
     const Playlist plList = m_plLists->items().at(index.row());
     switch (role) {
     case NaimRole:
-//        qDebug() << "naim" << plList.naim();
         naim = plList.naim();
         return QVariant(naim);
     case IsCurrentRole:
@@ -65,19 +59,19 @@ bool PlaylistsModel::setData(const QModelIndex &index, const QVariant &value, in
     switch (role) {
     case NaimRole:
         naim = value.toString();
-        plList.setNaim(&naim);
+        plList.setNaim(naim);
         break;
     case IsCurrentRole:
         isCurrent = value.toBool();
-        plList.setIsCurrent(&isCurrent);
+        plList.setIsCurrent(isCurrent);
         break;
     case idPlaylistRole:
         idPlaylist = value.toInt();
-        plList.setIdPlaylist(&idPlaylist);
+        plList.setIdPlaylist(idPlaylist);
         break;
     case NumRole:
         num = value.toUInt();
-        plList.setNum(&num);
+        plList.setNum(num);
         break;
     }
 
@@ -118,7 +112,6 @@ void PlaylistsModel::setPlLists(Playlists *plLists)
     if (m_plLists)
         m_plLists->disconnect(this);
     m_plLists = plLists;
-    qDebug() << "size - " << m_plLists->items().at(0).naim();
 
     if (m_plLists) {
         connect(m_plLists, &Playlists::beforeItemAppended, this, [=]() {

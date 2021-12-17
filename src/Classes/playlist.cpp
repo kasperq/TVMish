@@ -15,9 +15,9 @@ int Playlist::idPlaylist() const
     return m_idPlaylist;
 }
 
-void Playlist::setIdPlaylist(int* idPlaylist)
+void Playlist::setIdPlaylist(const int& value)
 {
-    m_idPlaylist = *idPlaylist;
+    m_idPlaylist = value;
 }
 
 bool Playlist::isCurrent() const
@@ -25,9 +25,9 @@ bool Playlist::isCurrent() const
     return m_isCurrent;
 }
 
-void Playlist::setIsCurrent(bool* isCurrent)
+void Playlist::setIsCurrent(const bool& value)
 {
-    m_isCurrent = *isCurrent;
+    m_isCurrent = value;
 }
 
 QString Playlist::naim() const
@@ -35,9 +35,9 @@ QString Playlist::naim() const
     return m_naim;
 }
 
-void Playlist::setNaim(QString* value)
+void Playlist::setNaim(const QString& value)
 {
-    m_naim = *value;
+    m_naim = value;
 }
 
 unsigned int Playlist::num() const
@@ -45,7 +45,7 @@ unsigned int Playlist::num() const
     return m_num;
 }
 
-void Playlist::setNum(unsigned int *num)
+void Playlist::setNum(const uint& value)
 {
-    m_num = *num;
+    m_num = value;
 }

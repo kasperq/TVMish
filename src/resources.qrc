@@ -42,5 +42,6 @@
         <file>Qml/Ico/83-calendar.bmp</file>
         <file>Qml/Elements/PlFileLocation.qml</file>
         <file>Qml/Elements/SureDialog.qml</file>
+        <file>Qml/Elements/ErrorDialog.qml</file>
     </qresource>
 </RCC>

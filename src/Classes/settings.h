@@ -8,14 +8,17 @@
 class Settings
 {
 public:
-    Settings(const QSqlDatabase &db);
+    Settings();
+    Settings(const QSqlDatabase &value);
     virtual ~Settings();
 
     QString appPath();
-    void setAppPath(const QString *appPath);
+    void setAppPath(const QString &value);
 
     QString curPlDir();
-    void setCurPlDir(const QString &curPlDir);
+    void setCurPlDir(const QString &value);
+
+    void setDB(const QSqlDatabase &db);
 
 private:
     QString m_appPath;
@@ -23,8 +26,8 @@ private:
     QString m_curPlDir;
 
     QSqlDatabase m_db;
-    QSqlQuery *q_select;
-    QSqlQuery *q_temp;
+    QSqlQuery q_select;
+    QSqlQuery q_temp;
 
     void countRows();
     void getSets();

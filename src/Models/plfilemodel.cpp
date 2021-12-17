@@ -1,13 +1,13 @@
 #include "plfilemodel.h"
 
 PlFilesModel::PlFilesModel()
-{
+{    
     m_files = new PlFiles();
 }
 
 PlFilesModel::~PlFilesModel()
 {
-
+    m_files = nullptr;
 }
 
 int PlFilesModel::rowCount(const QModelIndex &parent) const
@@ -30,10 +30,9 @@ QVariant PlFilesModel::data(const QModelIndex &index, int role) const
     bool isAvailable;
     QString format;
 
-    const PlFile plFile = m_files->items().at(index.row());
+    const PlFile plFile = m_files->items().at(index.row());    
     switch (role) {
     case FileNameRole:
-//        qDebug() << "model naim " << plFile.fileName();
         fileName = plFile.fileName();
         return QVariant(fileName);
     case FilePathRole:
@@ -75,40 +74,39 @@ bool PlFilesModel::setData(const QModelIndex &index, const QVariant &value, int 
     bool isAvailable;
     QString format;
 
-    PlFile plFile = m_files->items().at(index.row());
+    PlFile plFile = m_files->items().at(index.row());    
     switch (role) {
     case FileNameRole:        
         fileName = value.toString();
-
-        plFile.setFileName(&fileName);
+        plFile.setFileName(fileName);
         break;
     case FilePathRole:
         filePath = value.toString();
-        plFile.setFilePath(&filePath);
+        plFile.setFilePath(filePath);
         break;
     case FilePathLocalRole:
         filePathLocal = value.toString();
-        plFile.setFilePathLocal(&filePathLocal);
+        plFile.setFilePathLocal(filePathLocal);
         break;
     case IdPlaylistRole:
         idPlaylist = value.toInt();
-        plFile.setIdPlaylist(&idPlaylist);
+        plFile.setIdPlaylist(idPlaylist);
         break;
     case IdFileRole:
         idFile = value.toInt();
-        plFile.setIdFile(&idFile);
+        plFile.setIdFile(idFile);
         break;
     case IdFormatRole:
         idFormat = value.toInt();
-        plFile.setIdFormat(&idFormat);
+        plFile.setIdFormat(idFormat);
         break;
     case IsAvailableRole:
         isAvailable = value.toBool();
-        plFile.setIsAvailable(&isAvailable);
+        plFile.setIsAvailable(isAvailable);
         break;
     case FormatRole:
         format = value.toString();
-        plFile.setFormat(&format);
+        plFile.setFormat(format);
         break;
     }
 
@@ -155,12 +153,6 @@ void PlFilesModel::setFiles(PlFiles *files)
         m_files->disconnect(this);
 
     m_files = files;
-//    qDebug() << "setFiels: " << files->items().size();
-//    qDebug() << "setFiels: " << m_files->items().size();
-//    qDebug() << m_files->fileName() << m_files->idPlaylist();
-
-
-//    qDebug() << "size - " << m_files->items().at(0).fileName();
 
     if (m_files) {
         connect(m_files, &PlFiles::beforeItemAppended, this, [=]() {

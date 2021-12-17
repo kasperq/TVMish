@@ -3,7 +3,7 @@
 
 #include "tvmish.h"
 
-TVmish::TVmish(QString *appPath) : m_appPath(appPath)
+TVmish::TVmish(QString &appPath) : m_appPath(appPath)
 {
 //    m_url = "localhost";
 //#ifdef QT_DEBUG
@@ -15,21 +15,23 @@ TVmish::TVmish(QString *appPath) : m_appPath(appPath)
 
 TVmish::~TVmish()
 {
-    db->disconnect();
+    db.disconnect();
 //    delete *db;
 //    delete *mainContr;
 }
 
 bool TVmish::startApp()
 {
-    db = new DataBase();
-    if (db->connect()) {
-        sets = new Settings(db->db());
-        if (*m_appPath != sets->appPath())
-            sets->setAppPath(m_appPath);
+//    db = new DataBase();
+    if (db.connect()) {
+        m_sets.setDB(db.db());
+//        m_sets = new Settings(db->db());
+        if (m_appPath != m_sets.appPath())
+            m_sets.setAppPath(m_appPath);
 
-        mainContr = new MainController(db->db());
-        mainContr->loadMainForm();        
+//        m_mainContr = new MainController(db.db());
+//        m_mainContr.setDb(db);
+        m_mainContr.loadMainForm();
 
         return true;
     }

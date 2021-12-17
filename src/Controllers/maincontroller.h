@@ -6,15 +6,20 @@
 #include <QGuiApplication>
 
 #include "playlistcontroller.h"
+#include "DB/database.h"
 
 class MainController : public QObject
 {
     Q_OBJECT
 public:
+//    MainController();
+    MainController(DataBase &datab);
     MainController(QSqlDatabase db);
+    MainController& operator=(MainController &orig);
     virtual ~MainController();
 
     void loadMainForm();
+//    void setDb(DataBase &db);
 
 
 signals:
@@ -30,10 +35,8 @@ private:
     QQmlApplicationEngine engine;
 
     QSqlDatabase m_db;
-    PlaylistController *plContr;
-
-
-
+    std::shared_ptr< DataBase > m_dataB;
+    PlaylistController plContr {engine, *m_dataB};
 };
 
 #endif // MAINCONTROLLER_H

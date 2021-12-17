@@ -22,7 +22,7 @@ Rectangle {
             btn_text: qsTr("Pl.")
             ico_path: "qrc:/Qml/Ico/folder-add.ico"
             onClicked: {
-                console.log("plLists.addItem()");
+//                console.log("plLists.addItem()");
                 plLists.addItem();
             }
         }
@@ -33,7 +33,7 @@ Rectangle {
             btn_text: qsTr("- Pl.")
             ico_path: ""
             onClicked: {
-                console.log("plLists.removeCurrentItem(): " + curIndex);
+//                console.log("plLists.removeCurrentItem(): " + curIndex);
                 plLists.removeItem(curIndex);
             }
         }
@@ -44,7 +44,7 @@ Rectangle {
             btn_text: qsTr("Up")
             ico_path: ""
             onClicked: {
-                console.log("plLists.moveUp(): " + curIndex);
+//                console.log("plLists.moveUp(): " + curIndex);
                 plLists.move(curIndex, "up");
             }
         }
@@ -55,7 +55,7 @@ Rectangle {
             btn_text: qsTr("Down")
             ico_path: ""
             onClicked: {
-                console.log("plLists.moveDown(): " + curIndex);
+//                console.log("plLists.moveDown(): " + curIndex);
                 plLists.move(curIndex, "down");
             }
         }

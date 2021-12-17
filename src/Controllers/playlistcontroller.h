@@ -3,33 +3,58 @@
 
 #include <QObject>
 #include <QQmlApplicationEngine>
+#include <QSharedPointer>
+#include <QThread>
 
 #include "Gateways/playlistgw.h"
 #include "Classes/playlists.h"
+#include "Thread/playlistgwthread.h"
 
 #include "Gateways/plfilegw.h"
 #include "Classes/plfiles.h"
+
+#include "Classes/settings.h"
+
+#include "DB/database.h"
 
 class PlaylistController : public QObject
 {
     Q_OBJECT
 public:
-    explicit PlaylistController(QQmlApplicationEngine *engine, QSqlDatabase db);
+    PlaylistController(QQmlApplicationEngine &engine, DataBase &db);
+//    PlaylistController();
+//    PlaylistController& operator=(PlaylistController &orig);
     virtual ~PlaylistController();
 
     void openPlaylistManager();
 
 signals:
 
+public slots:
+    void addItemsFromDbToPlaylists();
+    void addItemsFromDbToFiles();
+
 private:
     QQmlApplicationEngine *m_engine;
-    QSqlDatabase m_db;
+    std::shared_ptr< DataBase > m_db;
+    std::shared_ptr< Settings > m_sets;
 
-    Playlists *m_plLists;
-    PlaylistGW *m_plGw;
+    PlaylistGW m_plGw {this, m_db->db()};
+    Playlists m_plLists;
 
-    PlFiles *m_files;
-    PlFileGW *m_fileGW;
+    PlaylistGwThread m_plGwThread {*m_db};
+
+    PlFiles m_files /*{*m_sets}*/;
+    PlFileGW m_fileGW {this, m_db->db()};
+
+
+
+
+    void initPlaylistConnections();
+    void openPlaylists();
+
+    void initFilesConnections();
+    void openFiles();
 
 
 };

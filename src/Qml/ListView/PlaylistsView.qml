@@ -89,7 +89,7 @@ Item {
             anchors.topMargin: 2
             anchors.leftMargin: 3
             z: 1
-            clip: true
+            clip: false
 
             function setColor(curControl, curIndex) {
                 if (curControl.hovered) {
@@ -115,7 +115,7 @@ Item {
                 }
             }
 
-            RowLayout {
+            RowLayout {                
                 focus: true
                 Layout.minimumHeight: 30
                 Layout.maximumHeight: 30
@@ -125,6 +125,7 @@ Item {
                 TextField {
                     id: lbl_cursor
                     text: plistsView.currentIndex == index ? ">" : "  "
+//                    text: model.id_playlist
                     color: "powderblue"
                     hoverEnabled: true
                     Layout.fillHeight: true
@@ -193,15 +194,15 @@ Item {
                                         if (event.key === Qt.Key_Return
                                             || event.key === Qt.Key_Escape
                                             || event.key === Qt.Key_Down
-                                            || event.key === Qt.Key_Up) {
-                                            edit_naim.editingFinished();
-                                            event.accepted = true;
+                                            || event.key === Qt.Key_Up) {                                            
+                                            edit_naim.editingFinished();                                            
+                                            event.accepted = true;                                            
                                         }
                                     }
 
                     onEditingFinished: {
-                        focus = false
-                        model.naim = text
+                        focus = false;
+                        model.naim = text;
 //                        console.log("editing finished");
                     }
                     onPressed: {
@@ -273,6 +274,10 @@ Item {
                 }
                 function onItemChanged(index) {
 //                    console.log("PlaylistsView: item changed");
+                    plistsView.model.list = plLists;
+                }
+                function onListChanged() {
+//                    console.log("PlaylistsView: list changed");
                     plistsView.model.list = plLists;
                 }
             }

@@ -13,7 +13,7 @@ class TVmish : public QObject
 {
     Q_OBJECT
 public:
-    TVmish(QString *appPath);
+    TVmish(QString &appPath);
     virtual ~TVmish();
 
     bool startApp();
@@ -21,13 +21,13 @@ public:
 signals:
 
 private:
-    DataBase *db;
-    MainController *mainContr;
-    Settings *sets;
+    DataBase db;
+    MainController m_mainContr {db};
+    Settings m_sets;
 
     std::string m_url;
     std::string m_dbName;
-    QString *m_appPath;
+    QString m_appPath;
 
 
 };

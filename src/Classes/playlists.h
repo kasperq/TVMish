@@ -14,14 +14,14 @@ class Playlists : public QObject
     Q_PROPERTY(int rowCount READ rowCount)
     Q_PROPERTY(QString naim READ naim)
 public:
-    explicit Playlists(PlaylistGW *plGw);
-    Playlists(QObject *parent = nullptr);
+    explicit Playlists(QObject *parent = nullptr);
     Playlists* operator=(const Playlists* orig);
     virtual ~Playlists();
 
     QVector<Playlist> items() const;
     bool setItemAt(int index, Playlist &item);
-    void addItem(QString *naim, bool *isCurrent, int *idPlaylist, uint *num);
+    void addItem(QString &naim, bool &isCurrent, int &idPlaylist, uint &num);
+    void clear();
 
     int rowCount() const;
     QString naim() const;
@@ -36,8 +36,11 @@ signals:
 
     void selectItem(int index);
     void itemChanged(int index);
+    void listChanged();
     void playlistScrolled(int idPlaylist);
-
+    void itemAdded(const int &index, const QString &naim, const bool &isCurrent);
+    void itemEdited(const int &idPlaylist, const QString &naim, const bool &isCurrent, const uint &num);
+    void itemToDelete(const int &idPlaylist, const int &index);
 
 public slots:
     void addItem();
@@ -46,15 +49,16 @@ public slots:
     void indexChanged(int index);
     void setIsCurrent(int index, bool isCurr);
 
-
+    //sets id_playlist and num fields to new added item
+    void setItemIdPlaylistAndNum(const int &index, const int &idPlaylist, const uint &num);
+    //removes item deleted from db
+    void itemRemoved(const int &idPlaylist, const int &index);
 
 
 
 
 private:
     QVector<Playlist> m_plLists;
-    PlaylistGW *m_plGw;
-
 };
 
 #endif // PLAYLISTS_H

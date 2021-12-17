@@ -7,57 +7,63 @@
 #include <QApplication>
 #include <QFileDialog>
 
-PlFiles::PlFiles(PlFileGW *plGW) : m_fileGw(plGW)
+PlFiles::PlFiles(QObject *parent) : QObject(parent)
 {
-    qDebug() << "constructor with params PlFiles";
+//    qDebug() << "constructor without params PlFiles";
+    m_idPlaylist = 1;
+    initConnections();
+
+    m_plThr.start();
 //    m_sets = std::make_shared<Settings>();
 }
 
-PlFiles::PlFiles(QObject *parent) : QObject(parent)
+PlFiles::PlFiles(Settings &sets) : m_sets(std::make_shared< Settings> (sets))
 {
     qDebug() << "constructor without params PlFiles";
     m_idPlaylist = 1;
+    initConnections();
+
+    m_plThr.start();
 //    m_sets = std::make_shared<Settings>();
 }
 
-PlFiles *PlFiles::operator=(const PlFiles *orig)
-{
-    m_files.clear();
+//PlFiles *PlFiles::operator=(const PlFiles *orig)
+//{
+//    m_files.clear();
 
-    QString fileName;
-    QString filePath;
-    QString filePathLocal;
-    QString format;
-    bool isAvailable;
-    int idPlaylist;
-    int idFile;
-    int idFormat;
+//    QString fileName;
+//    QString filePath;
+//    QString filePathLocal;
+//    QString format;
+//    bool isAvailable;
+//    int idPlaylist;
+//    int idFile;
+//    int idFormat;
 
-    qDebug() << "===";
+//    qDebug() << "===";
 
 
-    for(QVector< PlFile >::iterator pI = orig->items().begin(); pI != orig->items().end(); ++ pI) {
-        fileName = pI->fileName();
-        filePath = pI->filePath();
-        filePathLocal = pI->filePathLocal();
-        format = pI->format();
-        isAvailable = pI->isAvailable();
-        idPlaylist = pI->idPlaylist();
-        idFile = pI->idFile();
-        idFormat = pI->idFormat();
+//    for(QVector< PlFile >::iterator pI = orig->items().begin(); pI != orig->items().end(); ++ pI) {
+//        fileName = pI->fileName();
+//        filePath = pI->filePath();
+//        filePathLocal = pI->filePathLocal();
+//        format = pI->format();
+//        isAvailable = pI->isAvailable();
+//        idPlaylist = pI->idPlaylist();
+//        idFile = pI->idFile();
+//        idFormat = pI->idFormat();
 
-        addItem(&idFile, &idPlaylist, &fileName, &filePath, &filePathLocal, &idFormat, &isAvailable, &format);
-    }
-    m_fileGw = orig->m_fileGw;
-    m_idPlaylist = orig->m_idPlaylist;
+//        addItem(idFile, idPlaylist, fileName, filePath, filePathLocal, idFormat, isAvailable, format);
+//    }
+//    m_idPlaylist = orig->m_idPlaylist;
 
-    return this;
-}
+//    return this;
+//}
 
 PlFiles::~PlFiles()
 {
-    delete m_fileGw;
-    m_fileGw = nullptr;
+    m_plThr.quit();
+    m_plThr.wait();
 }
 
 QVector<PlFile> PlFiles::items() const
@@ -91,14 +97,19 @@ bool PlFiles::setItemAt(int index, PlFile &item)
     bool isAvailable = item.isAvailable();
 //    QString format = item.format();
 
-    m_fileGw->modify(&idFile, &idPlaylist, &fileName, &filePath, &filePathLocal, &idFormat, &isAvailable);
+    emit itemEdited(index, idFile, idPlaylist, fileName, filePath, filePathLocal, idFormat, isAvailable);
     return true;
 }
 
-void PlFiles::addItem(int *idFile, int *idPlaylist, QString *fileName, QString *filePath, QString *filePathLocal,
-                      int *idFormat, bool *isAvailable, QString *format)
+void PlFiles::clear()
 {
-    PlFile newFile;
+    m_files.clear();
+}
+
+void PlFiles::addItem(const int &idFile, const int &idPlaylist, const QString &fileName, const QString &filePath,
+                      const QString &filePathLocal, const int &idFormat, const bool &isAvailable, const QString &format)
+{    
+    PlFile newFile;    
     newFile.setIdFile(idFile);
     newFile.setIdPlaylist(idPlaylist);
     newFile.setFileName(fileName);
@@ -124,7 +135,7 @@ QString PlFiles::fileName() const
 void PlFiles::setFilePath(int index, QString filePath)
 {
     PlFile curFile = m_files.at(index);
-    curFile.setFilePath(&filePath);
+    curFile.setFilePath(filePath);
     setItemAt(index, curFile);
     emit itemChanged(index);
 }
@@ -149,15 +160,26 @@ void PlFiles::selectFile()
 
 QUrl PlFiles::getCurDir()
 {
-    return QUrl::fromLocalFile(m_sets->curPlDir());
+    if (m_sets) {
+        return QUrl::fromLocalFile(m_sets->curPlDir());
+    } else {
+        return QUrl::fromLocalFile("");
+    }
 }
 
 void PlFiles::setCurDir(const QUrl &curDir)
 {
-    qDebug() << "isLocal: " << curDir.isLocalFile();
-    m_curDir = curDir.path();
-    qDebug() << "curPlDir: " << m_curDir;
-    m_sets->setCurPlDir(m_curDir);
+    if (m_sets) {
+        qDebug() << "isLocal: " << curDir.isLocalFile();
+        m_curDir = curDir.path();
+        qDebug() << "curPlDir: " << m_curDir;
+        m_sets->setCurPlDir(m_curDir);
+    }
+}
+
+void PlFiles::setSets(const Settings &value)
+{
+    m_sets = std::make_shared< Settings > (value);
 }
 
 int PlFiles::curIndex() const
@@ -168,102 +190,101 @@ int PlFiles::curIndex() const
 
 void PlFiles::open(int idPlaylist)
 {
-    qDebug() << "plfiles open id: " << idPlaylist;
-    QString fileName;
-    QString filePath;
-    QString filePathLocal;
-    int idFile;
-    int idFormat;
-    bool isAvailable;
-    QString format;
-    this->m_idPlaylist = idPlaylist;
+//    qDebug() << "plfiles open id: " << idPlaylist;
+//    QString fileName;
+//    QString filePath;
+//    QString filePathLocal;
+//    int idFile;
+//    int idFormat;
+//    bool isAvailable;
+//    QString format;
+//    this->m_idPlaylist = idPlaylist;
 
-    m_files.clear();
+//    m_files.clear();
 
-    //adding default file/category "All"
-//    if (idPlaylist == 0) {
-//        fileName = tr("All");
-//        filePath = filePathLocal = "";
-//        idFile = 0;
-//        this->addItem(&idFile, &idPlaylist, &fileName, &filePath, &filePathLocal, &idFormat, &isAvailable, &format);
+//    //adding default file/category "All"
+////    if (idPlaylist == 0) {
+////        fileName = tr("All");
+////        filePath = filePathLocal = "";
+////        idFile = 0;
+////        this->addItem(&idFile, &idPlaylist, &fileName, &filePath, &filePathLocal, &idFormat, &isAvailable, &format);
 
-    //adding files added manually
-    m_fileGw->select(&idPlaylist);
-    if (*m_fileGw->rows() > 0) {
-        m_fileGw->data()->first();
-        do {
-            idFile = m_fileGw->data()->value("id_file").toInt();
-            fileName = m_fileGw->data()->value("file_name").toString();
-            filePath = m_fileGw->data()->value("file_path").toString();
-            filePathLocal = m_fileGw->data()->value("file_path_local").toString();
-            idFormat = m_fileGw->data()->value("id_format").toInt();
-            isAvailable = m_fileGw->data()->value("is_available").toBool();
-            format = m_fileGw->data()->value("format").toString();
+//    //adding files added manually
+//    m_fileGw->select(&idPlaylist);
+//    if (*m_fileGw->rows() > 0) {
+//        m_fileGw->data()->first();
+//        do {
+//            idFile = m_fileGw->data()->value("id_file").toInt();
+//            fileName = m_fileGw->data()->value("file_name").toString();
+//            filePath = m_fileGw->data()->value("file_path").toString();
+//            filePathLocal = m_fileGw->data()->value("file_path_local").toString();
+//            idFormat = m_fileGw->data()->value("id_format").toInt();
+//            isAvailable = m_fileGw->data()->value("is_available").toBool();
+//            format = m_fileGw->data()->value("format").toString();
 
-            qDebug() << "adding files: " << fileName << ". idFile: " << idFile;
-            this->addItem(&idFile, &idPlaylist, &fileName, &filePath, &filePathLocal, &idFormat, &isAvailable, &format);
-        } while(m_fileGw->data()->next());
-    }
-    qDebug() << "rowCountChanged(rowCount()); " << rowCount();
+//            qDebug() << "adding files: " << fileName << ". idFile: " << idFile;
+//            this->addItem(&idFile, &idPlaylist, &fileName, &filePath, &filePathLocal, &idFormat, &isAvailable, &format);
+//        } while(m_fileGw->data()->next());
+//    }
+//    qDebug() << "rowCountChanged(rowCount()); " << rowCount();
     emit rowCountChanged(rowCount());
 
 }
 
-void PlFiles::addItem()
+void PlFiles::appendNewItem()
 {
     emit beforeItemAppended();
 
     bool isAvailable {false};
+    int idFormat {};
 
     PlFile item;
-    item.setIsAvailable(&isAvailable);
-    item.setIdPlaylist(&m_idPlaylist);
-
-    m_fileGw->insert(&item);
+    item.setIsAvailable(isAvailable);
+    item.setIdPlaylist(m_idPlaylist);
+    item.setIdFormat(idFormat);
 
     m_files.append(item);
+    emit itemAppended(m_files.size() - 1, m_idPlaylist, item.fileName(), item.filePath(), item.filePathLocal(), item.idFormat(), isAvailable);
 
-    qDebug() << "addItem()";
     emit afterItemAppended();
     emit selectItem(m_files.size() - 1);
     emit rowCountChanged(rowCount());
 }
 
 void PlFiles::addItemFromLocalFile(int index, QUrl filePath)
-{
-    if (filePath.isLocalFile()) {
-        m_curDir = filePath.toLocalFile();
-        QFileInfo fInf(filePath.toLocalFile());
-        QString fileExt = fInf.completeSuffix();
-        bool isValid = isFormatValid(&fileExt);
-        if (isValid) {
-            int idFormat = m_fileGw->getFormatId(&fileExt);
-            QString plFilePath = m_curDir;
-            QString fName = fInf.fileName();
-            bool isAvailable = true;
+{  
+    m_plThr.copyFile(index, filePath);
+//    if (filePath.isLocalFile()) {
+//        m_curDir = filePath.toLocalFile();
+//        QFileInfo fInf(filePath.toLocalFile());
+//        QString fileExt = fInf.completeSuffix();
+//        bool isValid = isFormatValid(fileExt);
+//        if (isValid) {
+//            int idFormat {/*m_fileGw->getFormatId(&fileExt)*/};
+//            QString plFilePath = m_curDir;
+//            QString fName = fInf.fileName();
+//            bool isAvailable = true;
 
-            m_curDir = fInf.absolutePath();
-            m_sets->setCurPlDir(m_curDir);
+//            m_curDir = fInf.absolutePath();
+//            m_sets->setCurPlDir(m_curDir);
 
-            QString newFilePath = m_sets->appPath() + "/temp/" + fName;
+//            QString newFilePath = m_sets->appPath() + "/temp/" + fName;
 
-            PlFile item = m_files.at(index);
+//            copyLocalFile(plFilePath, newFilePath);
 
-            int idFile = item.idFile();
-            copyLocalFile(&plFilePath, &newFilePath, &idFile);
+//            PlFile item = m_files.at(index);
+//            if (item.fileName() == "")
+//                item.setFileName(fName);
+//            item.setFilePath(plFilePath);
+//            item.setFilePathLocal(newFilePath);
+//            item.setFormat(fileExt);
+//            item.setIdFormat(idFormat);
+//            item.setIsAvailable(isAvailable);
+//            setItemAt(index, item);
 
-            if (item.fileName() == "")
-                item.setFileName(&fName);
-            item.setFilePath(&plFilePath);
-            item.setFilePathLocal(&newFilePath);
-            item.setFormat(&fileExt);
-            item.setIdFormat(&idFormat);
-            item.setIsAvailable(&isAvailable);
-            setItemAt(index, item);
-
-            emit itemChanged(index);
-        }
-    }
+//            emit itemChanged(index);
+//        }
+//    }
 }
 
 void PlFiles::addItemFromUrl(int index, QUrl fileUrl)
@@ -290,9 +311,9 @@ void PlFiles::removeCurrentItem(int index)
     }
 
     int id = m_files.at(index).idFile();
-    m_fileGw->deleteRecord(&id);
     m_files.removeAt(index);
 
+    emit itemDeleted(index, id);
     emit afterItemRemoved();
 
     if (m_files.size() > 1 && curIndex == 0)
@@ -323,28 +344,86 @@ void PlFiles::setIdPlaylist(int idPlaylist)
     m_idPlaylist = idPlaylist;
 }
 
-bool PlFiles::isFormatValid(QString *format)
+bool PlFiles::isFormatValid(QString &format)
 {
-    return m_fileGw->findFormat(format);
+//    return m_fileGw->findFormat(format);
 }
 
-void PlFiles::copyLocalFile(QString *oldPath, QString *newPath, int *idFile)
+void PlFiles::copyLocalFile(QString &oldPath, QString &newPath)
 {
-    QFile oldFile(*oldPath);
-    QFileInfo fInf(*newPath);
+    QFile oldFile(oldPath);
+    QFileInfo fInf(newPath);
 
     QDir newDir;
     if (newDir.mkpath(fInf.absolutePath())) {
-//        oldFile.copy(*newPath);
         connect(&m_plThr, SIGNAL(finished()), this, SLOT(copyFinished()));
-//        connect(&m_plThr, &PlaylistThread::finished, &m_plThr, &PlaylistThread::deleteLater);
-        m_plThr.setOldNewPaths(*oldPath, *newPath);
+        m_plThr.copyFile(oldPath, newPath);
         qDebug() << "start_copy: " << QTime::currentTime();
         m_plThr.start();
     }
 }
 
+void PlFiles::initConnections()
+{
+    connect(&m_plThr, SIGNAL(checkFileExtension(int,QString&,QString)),
+            this, SIGNAL(checkFileExtension(int,QString&,QString)));
+    connect(this, SIGNAL(extensionChecked(int,QString&,QString,bool,int,QString)),
+            &m_plThr, SLOT(extensionChecked(int,QString&,QString,bool,int,QString)));
+    connect(&m_plThr, SIGNAL(fileCopied(QString,QString,QString,QString,int,bool,int)),
+            this, SLOT(addCopiedFileInfo(QString,QString,QString,QString,int,bool,int)));
+    connect(&m_plThr, SIGNAL(error(QString)), this, SLOT(fileNotCopied(QString)));
+}
+
 void PlFiles::copyFinished()
 {
     qDebug() << "copy_finished: " << QTime::currentTime();
+}
+
+void PlFiles::setNewItemIdFile(const int &index, const int &idFile)
+{
+    auto newFileItem = m_files.at(index);
+    newFileItem.setIdFile(idFile);
+
+    setItemAt(index, newFileItem);
+    emit itemChanged(index);
+}
+
+void PlFiles::addCopiedFileInfo(const QString &fileName, const QString &filePath, const QString &newFilePath,
+                                const QString &extension, const int &idFormat, const bool &isAvailable, const int &index)
+{
+    qDebug() << "addCopiedFileInfo " << index;
+    PlFile item = m_files.at(index);
+    if (item.fileName() == "")
+        item.setFileName(fileName);
+    item.setFilePath(filePath);
+    item.setFilePathLocal(newFilePath);
+    item.setFormat(extension);
+    item.setIdFormat(idFormat);
+    item.setIsAvailable(isAvailable);
+    setItemAt(index, item);
+
+    emit itemChanged(index);
+
+    QFileInfo fInf(fileName);
+    m_curDir = fInf.absolutePath();
+    m_sets->setCurPlDir(m_curDir);
+}
+
+void PlFiles::fileNotCopied(const QString &errorMsg)
+{
+    qDebug() << "File not copied: " << errorMsg;
+}
+
+void PlFiles::extensionChecked(const int &index, QString &fullFilePath, const QString &extension,
+                               const bool &isValid, const int &idFormat)
+{
+    if (isValid) {
+        QString appPath;
+        if (m_sets)
+            appPath = m_sets->appPath();
+        emit extensionChecked(index, fullFilePath, extension, isValid, idFormat, appPath);
+    } else {
+        QString msg {tr("File format is invalid!")};
+        emit errorEmited(msg);
+    }
 }

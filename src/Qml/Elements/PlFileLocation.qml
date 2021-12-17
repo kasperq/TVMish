@@ -5,7 +5,9 @@ import Qt.labs.platform 1.1
 import QtQuick.Controls.Material 2.12
 import QtQuick.Controls.Universal 2.12
 
+
 import "../Elements" as Elements
+import Playlists 1.0
 
 Dialog {
     id: _dlgLocationForm
@@ -25,6 +27,15 @@ Dialog {
     onAccepted: console.log("Ok clicked")
     onRejected: console.log("Cancel clicked")
 
+//    Elements.ErrorDialog {
+//        id: dlg_error
+//        width: 350
+//        height: 80
+//        anchors.centerIn: Overlay.overlay
+////        onOkClicked: {
+////            plFiles.removeCurrentItem(plFilesView.currentIndex);
+////        }
+//    }
 
 
     contentItem: Rectangle {
@@ -33,7 +44,7 @@ Dialog {
         opacity: 1
         border.color: "dimgray"
         color: "#424949"
-        z: 10
+        z: 10        
 
         ColumnLayout {
             anchors.fill: parent
@@ -76,8 +87,7 @@ Dialog {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.bottom: parent.bottom
-                }
-
+                }                
             }
             ColumnLayout {
                 id: panel_fileAction
@@ -182,5 +192,13 @@ Dialog {
             _dlgLocationForm.accepted();
             _dlgLocationForm.close();
         }
-    }       
+    }
+//    Connections {
+//        target: plFiles
+//        function onErrorEmited(errorMsg) {
+//            console.log(errorMsg);
+//            dlg_error.errorText = errorMsg;
+//            dlg_error.open();
+//        }
+//    }
 }

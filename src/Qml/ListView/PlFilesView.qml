@@ -30,7 +30,7 @@ ColumnLayout {
             id: _fileLocation
             anchors.centerIn: Overlay.overlay            
             onOkClicked: {                
-                plFiles.addItem();
+                plFiles.appendNewItem();
 //                plFiles.addItemFromLocalFile(plFilesView.currentIndex, _fileLocation.fileUrl);
 //                plFiles.setFilePath(plFilesView.currentIndex, _fileLocation.file_path);
             }
@@ -42,6 +42,15 @@ ColumnLayout {
                 console.log("plfilesview: cancel clicked");
             }
 
+        }
+        Elements.ErrorDialog {
+            id: dlg_error
+            width: 350
+            height: 80
+            anchors.centerIn: Overlay.overlay
+            //        onOkClicked: {
+            //            plFiles.removeCurrentItem(plFilesView.currentIndex);
+            //        }
         }
         Elements.SureDialog {
             id: dlg_delete
@@ -55,8 +64,6 @@ ColumnLayout {
             onOkClicked: {
                 plFiles.removeCurrentItem(plFilesView.currentIndex);
             }
-
-
         }
 
         RowLayout {
@@ -163,10 +170,11 @@ ColumnLayout {
             plFilesView.model.list = plFiles;
         }
 //        Component.onCompleted: {
-//            plFilesView.model.list = plFiles;
+//            console.log("onCompleted");
+////            plFilesView.model.list = plFiles;
 //        }
 
-        model: PlFilesModel  {
+        model: PlFilesModel  {            
             list: plFiles
         }
 
@@ -311,7 +319,7 @@ ColumnLayout {
                     height: 30
                     checked: model.is_available
 
-                    onClicked: {                        
+                    onClicked: {
                         model.is_available = checked;
                         plFilesView.currentIndex = index;
                     }
@@ -339,6 +347,11 @@ ColumnLayout {
                     function onRowCountChanged(rows) {
 //                        console.log("PlFilesView: row count changed: " + rows);
                         plFilesView.model.list = plFiles;
+                    }
+                    function onErrorEmited(errorMsg) {
+                        console.log(errorMsg);
+                        dlg_error.errorText = errorMsg;
+                        dlg_error.open();
                     }
                 }
             }

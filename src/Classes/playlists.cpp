@@ -2,10 +2,6 @@
 
 #include "./Models/playlistsmodel.h"
 
-Playlists::Playlists(PlaylistGW *plGw) : m_plGw(plGw)
-{
-    qDebug() << "constructor with params Playlists";
-}
 
 Playlists::Playlists(QObject *parent) : QObject(parent)
 {
@@ -26,7 +22,7 @@ Playlists *Playlists::operator=(const Playlists *orig)
         isCurrent = pI->isCurrent();
         idPlaylist = pI->idPlaylist();
         num = pI->num();
-        addItem(&naim, &isCurrent, &idPlaylist, &num);
+        addItem(naim, isCurrent, idPlaylist, num);
     }
     return this;
 }
@@ -59,12 +55,12 @@ bool Playlists::setItemAt(int index, Playlist &item)
     int idPlaylist = item.idPlaylist();
     uint num = item.num();
 
-    m_plGw->modify(&idPlaylist, &naim, &isCurrent, &num);
+    emit itemEdited(idPlaylist, naim, isCurrent, num);
 
     return true;
 }
 
-void Playlists::addItem(QString *naim, bool *isCurrent, int *idPlaylist, uint *num)
+void Playlists::addItem(QString &naim, bool &isCurrent, int &idPlaylist, uint &num)
 {
     Playlist newPl;
     newPl.setIdPlaylist(idPlaylist);
@@ -73,8 +69,12 @@ void Playlists::addItem(QString *naim, bool *isCurrent, int *idPlaylist, uint *n
     newPl.setNum(num);
 
     m_plLists.append(newPl);
+    emit listChanged();
+}
 
-//    qDebug() << "pl. append() " << *naim;
+void Playlists::clear()
+{
+    m_plLists.clear();
 }
 
 void Playlists::addItem()
@@ -84,38 +84,22 @@ void Playlists::addItem()
     Playlist item;
     bool isCurrent = false;
     uint num = 0;
-    item.setIsCurrent(&isCurrent);
-    item.setNum(&num);
-
-    m_plGw->insert(&item);
+    item.setIsCurrent(isCurrent);
+    item.setNum(num);
 
     m_plLists.append(item);
-//    qDebug() << "pl. append()";
+
+    emit itemAdded(m_plLists.size() - 1, item.naim(), item.isCurrent());
+
     emit afterItemAppended();
-//    qDebug() << "selectItem(curIndex): " << m_plLists.size() - 1;
     emit selectItem(m_plLists.size() - 1);
 }
 
 void Playlists::removeItem(int index)
 {
-    emit beforeItemRemoved(index);
-
-    int curIndex;
-    if (index == m_plLists.size() - 1)
-        curIndex = m_plLists.size() - 2;
-    else
-        curIndex = index;
-
     int id = m_plLists.at(index).idPlaylist();
-    m_plGw->deleteRecord(&id);
-    m_plLists.removeAt(index);    
 
-    emit afterItemRemoved();
-//    qDebug() << "selectItem(curIndex): " << curIndex;
-    if (m_plLists.size() > 1 && curIndex == 0)
-        emit selectItem(1);
-    if (m_plLists.size() > 0)
-        emit selectItem(curIndex);
+    emit itemToDelete(id, index);
 }
 
 void Playlists::move(int index, QString type)
@@ -156,10 +140,10 @@ void Playlists::move(int index, QString type)
         isCurrent = m_plLists.at(curIndex).isCurrent();
         num = m_plLists.at(curIndex).num() + multipleSign;
 
-        pl.setIdPlaylist(&idPlaylist);
-        pl.setNaim(&naim);
-        pl.setIsCurrent(&isCurrent);
-        pl.setNum(&num);
+        pl.setIdPlaylist(idPlaylist);
+        pl.setNaim(naim);
+        pl.setIsCurrent(isCurrent);
+        pl.setNum(num);
 
         setItemAt(curIndex, pl);
 
@@ -168,10 +152,10 @@ void Playlists::move(int index, QString type)
         isCurrent = m_plLists.at(moveToIndex).isCurrent();
         num = m_plLists.at(moveToIndex).num() - multipleSign;
 
-        pl.setIdPlaylist(&idPlaylist);
-        pl.setNaim(&naim);
-        pl.setIsCurrent(&isCurrent);
-        pl.setNum(&num);
+        pl.setIdPlaylist(idPlaylist);
+        pl.setNaim(naim);
+        pl.setIsCurrent(isCurrent);
+        pl.setNum(num);
 
         setItemAt(moveToIndex, pl);
 
@@ -188,35 +172,70 @@ void Playlists::indexChanged(int index)
 }
 
 void Playlists::setIsCurrent(int index, bool isCurr)
-{
-    QList<Playlist>::iterator plIt;
-    int ind {0};
-    int id {0};
-    QString naim {};
-    uint num {};
-    bool newIsCurr {false};
-    for (plIt = m_plLists.begin(); plIt != m_plLists.end(); ++plIt) {
-        if (plIt->isCurrent() && ind != index) {
-            plIt->setIsCurrent(&newIsCurr);
-            id = plIt->idPlaylist();
-            naim = plIt->naim();
-            num = plIt->num();
+{    
+    qDebug() << "index " << index << " isCurr " << isCurr;
+    if (index != -1) {
+        QList<Playlist>::iterator plIt;
+        int ind {0};
+        int id {0};
+        QString naim {};
+        uint num {};
+        bool newIsCurr {false};
+        for (plIt = m_plLists.begin(); plIt != m_plLists.end(); ++plIt) {
+            if (plIt->isCurrent() && ind != index) {
+                plIt->setIsCurrent(newIsCurr);
+                id = plIt->idPlaylist();
+                naim = plIt->naim();
+                num = plIt->num();
 
-            m_plGw->modify(&id, &naim, &newIsCurr, &num);
-        }
-        if (ind == index) {
-            plIt->setIsCurrent(&isCurr);
-            id = plIt->idPlaylist();
-            naim = plIt->naim();
-            num = plIt->num();
+                emit itemEdited(id, naim, newIsCurr, num);
+            }
+            if (ind == index) {
+                plIt->setIsCurrent(isCurr);
+                id = plIt->idPlaylist();
+                naim = plIt->naim();
+                num = plIt->num();
 
-            m_plGw->modify(&id, &naim, &isCurr, &num);
+                emit itemEdited(id, naim, isCurr, num);
+            }
+            ++ind;
         }
-        ++ind;
     }
 
     emit itemChanged(index);
-//    emit selectItem(index);
+    //    emit selectItem(index);
+}
+
+void Playlists::setItemIdPlaylistAndNum(const int &index, const int &idPlaylist, const uint &num)
+{
+    auto curPlaylist = m_plLists.at(index);
+    curPlaylist.setIdPlaylist(idPlaylist);
+    curPlaylist.setNum(num);
+
+    setItemAt(index, curPlaylist);
+
+    emit itemChanged(index);
+}
+
+void Playlists::itemRemoved(const int &idPlaylist, const int &index)
+{
+    emit beforeItemRemoved(index);
+    int curIndex;
+    if (index == m_plLists.size() - 1)
+        curIndex = m_plLists.size() - 2;
+    else
+        curIndex = index;
+
+    m_plLists.removeAt(index);
+
+    emit afterItemRemoved();
+
+    if (m_plLists.size() > 1 && curIndex == 0) {
+        emit selectItem(1);
+    }
+    if (m_plLists.size() > 0) {
+        emit selectItem(curIndex);
+    }
 }
 
 int Playlists::rowCount() const
