@@ -31,6 +31,7 @@ QVariant PlFilesModel::data(const QModelIndex &index, int role) const
     QString format;
 
     const PlFile plFile = m_files->items().at(index.row());    
+//    qDebug() << "model: " << plFile.fileName();
     switch (role) {
     case FileNameRole:
         fileName = plFile.fileName();
@@ -142,6 +143,7 @@ QHash<int, QByteArray> PlFilesModel::roleNames() const
 
 PlFiles *PlFilesModel::files() const
 {
+//    qDebug() << "model: m_files.size: " << m_files->items().size();
     return m_files;
 }
 
@@ -153,6 +155,8 @@ void PlFilesModel::setFiles(PlFiles *files)
         m_files->disconnect(this);
 
     m_files = files;
+
+//    qDebug() << "model: " << m_files->items().size();
 
     if (m_files) {
         connect(m_files, &PlFiles::beforeItemAppended, this, [=]() {

@@ -103,7 +103,8 @@ bool PlFiles::setItemAt(int index, PlFile &item)
 
 void PlFiles::clear()
 {
-    m_files.clear();
+    if (m_files.size() > 0)
+        m_files.clear();
 }
 
 void PlFiles::addItem(const int &idFile, const int &idPlaylist, const QString &fileName, const QString &filePath,
@@ -120,10 +121,12 @@ void PlFiles::addItem(const int &idFile, const int &idPlaylist, const QString &f
     newFile.setFormat(format);
 
     m_files.append(newFile);
+//    emit listChanged();
 }
 
 int PlFiles::rowCount() const
 {
+//    qDebug() << "rowCount: " << m_files.size();
     return m_files.size();
 }
 
@@ -178,7 +181,7 @@ void PlFiles::setCurDir(const QUrl &curDir)
 }
 
 void PlFiles::setSets(const Settings &value)
-{
+{    
     m_sets = std::make_shared< Settings > (value);
 }
 
@@ -188,9 +191,9 @@ int PlFiles::curIndex() const
     return 0;
 }
 
-void PlFiles::open(int idPlaylist)
+void PlFiles::open(const int &idPlaylist)
 {
-//    qDebug() << "plfiles open id: " << idPlaylist;
+    qDebug() << "plfiles open id: " << idPlaylist;
 //    QString fileName;
 //    QString filePath;
 //    QString filePathLocal;
@@ -339,7 +342,7 @@ int PlFiles::idPlaylist() const
     return m_idPlaylist;
 }
 
-void PlFiles::setIdPlaylist(int idPlaylist)
+void PlFiles::setIdPlaylist(const int &idPlaylist)
 {
     m_idPlaylist = idPlaylist;
 }
@@ -402,11 +405,13 @@ void PlFiles::addCopiedFileInfo(const QString &fileName, const QString &filePath
     item.setIsAvailable(isAvailable);
     setItemAt(index, item);
 
-    emit itemChanged(index);
+    emit itemChanged(index);  
 
     QFileInfo fInf(fileName);
     m_curDir = fInf.absolutePath();
     m_sets->setCurPlDir(m_curDir);
+
+    qDebug() << "addCopiedFileInfo m_sets changed curPlaylistDir: " << index;
 }
 
 void PlFiles::fileNotCopied(const QString &errorMsg)

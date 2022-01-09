@@ -28,6 +28,7 @@ void PlFileGW::select(const int &idPlaylist)
     q_select.exec();
     calcRowCount();
 
+//    qDebug() << "GW: selected: " << m_rows;
     emit selected();
 }
 

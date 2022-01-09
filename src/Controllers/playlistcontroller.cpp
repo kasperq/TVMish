@@ -7,9 +7,10 @@ PlaylistController::PlaylistController(QQmlApplicationEngine &engine, DataBase &
     m_engine(&engine),
     m_db(std::make_shared< DataBase > (db))
 {
-    qDebug() << "PlaylistController constructor";
+    qDebug() << "PlaylistController constructor: " << m_db->db();
     //    m_db = std::make_shared< DataBase > (db);
-    m_sets = std::make_shared< Settings > (m_db->db());
+    m_sets = std::make_shared< Settings > (m_db->db());    
+    qDebug() << "PlContr end: " << m_db->db();
 }
 
 //PlaylistController::PlaylistController()
@@ -29,16 +30,6 @@ PlaylistController::~PlaylistController()
 
 //    delete m_engine;
     m_engine = nullptr;
-
-//    delete m_plLists;
-//    m_plLists = nullptr;
-//    delete m_plGw;
-//    m_plGw = nullptr;
-
-//    delete m_files;
-//    m_files = nullptr;
-//    delete m_fileGW;
-//    m_fileGW = nullptr;
 }
 
 void PlaylistController::openPlaylistManager()
@@ -49,10 +40,8 @@ void PlaylistController::openPlaylistManager()
 
     initFilesConnections();
     openFiles();
-//    m_fileGW = new PlFileGW();
-//    m_files = new PlFiles(m_fileGW);
-//    m_engine->rootContext()->setContextProperty(QStringLiteral("plFiles"), m_files);
-//    QObject::connect(&m_plLists, SIGNAL(playlistScrolled(int)), m_files, SLOT(open(int)));
+    qDebug() << "plContr: ";
+    qDebug() << "plcontr: " << m_db->db();
 }
 
 void PlaylistController::addItemsFromDbToPlaylists()
@@ -86,9 +75,10 @@ void PlaylistController::addItemsFromDbToFiles()
     int idFormat;
     bool isAvailable;
     QString format;
-    int idPlaylist;
+    int idPlaylist {m_plLists.curIdPlaylist()};
 
     m_files.clear();
+    m_files.setIdPlaylist(idPlaylist);
 
     //adding default file/category "All"
 //    if (idPlaylist == 0) {
@@ -111,9 +101,10 @@ void PlaylistController::addItemsFromDbToFiles()
             format = m_fileGW.data()->value("format").toString();
 
             m_files.setIdPlaylist(idPlaylist);
-            m_files.addItem(idFile, idPlaylist, fileName, filePath, filePathLocal, idFormat, isAvailable, format);
+            m_files.addItem(idFile, idPlaylist, fileName, filePath, filePathLocal, idFormat, isAvailable, format);            
         } while(m_fileGW.data()->next());
-    }
+    }    
+    emit filesAdded(idPlaylist);
 }
 
 void PlaylistController::initPlaylistConnections()
@@ -140,6 +131,8 @@ void PlaylistController::initFilesConnections()
 {
     connect(&m_plLists, SIGNAL(playlistScrolled(int)), &m_fileGW, SLOT(select(int)));
     connect(&m_fileGW, SIGNAL(selected()), this, SLOT(addItemsFromDbToFiles()));
+    connect(&m_fileGW, SIGNAL(selected()), &m_files, SIGNAL(listChanged()));
+//    connect(this, SIGNAL(filesAdded(int)), &m_files, SLOT(open(int)));
 
     connect(&m_files, SIGNAL(itemEdited(int,int,int,QString,QString,QString,int,bool)),
             &m_fileGW, SLOT(modify(int,int,int,QString,QString,QString,int,bool)));

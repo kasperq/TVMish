@@ -4,13 +4,12 @@ import QtQuick.Controls
 import QtQuick.Controls.Material 2.12
 import QtQuick.Controls.Universal 2.12
 
-import "../Elements" as Elements
+//import "../Elements" as Elements
 import Playlists 1.0
 
 Item {
     id: plListsView
     visible: true
-    anchors.fill: parent
 
     property int curIndex: plistsView.currentIndex
     signal indexChanged(int currentIndex)        
@@ -33,16 +32,20 @@ Item {
         flickableDirection: Flickable.AutoFlickDirection
         ScrollBar.vertical: ScrollBar {}
 
-        onCurrentIndexChanged: {            
-            indexChanged(plistsView.currentIndex);
+
+        onCurrentIndexChanged: {
+//            console.log("onCurrentIndexChanged");
+//            (plistsView.currentIndex);
             plLists.indexChanged(plistsView.currentIndex);
             plistsView.model.list = plLists;
+
         }   
 //        Component.onCompleted: {
 //            plistsView.model.list = plLists;
 //        }
 
         model: PlaylistsModel  {
+            id: plModel
             list: plLists        }
 
         header: Rectangle {
@@ -85,6 +88,7 @@ Item {
         }
 
         delegate: ColumnLayout {
+            id: listDelegate
             width: ListView.view.width
             anchors.topMargin: 2
             anchors.leftMargin: 3
@@ -115,7 +119,7 @@ Item {
                 }
             }
 
-            RowLayout {                
+            RowLayout {
                 focus: true
                 Layout.minimumHeight: 30
                 Layout.maximumHeight: 30
@@ -140,7 +144,7 @@ Item {
                     font.pixelSize: 16
                     font.bold: true
                     KeyNavigation.down: bottom
-                    KeyNavigation.up: top                    
+                    KeyNavigation.up: top
 
                     background: Rectangle {
                         id: back_cur
@@ -161,7 +165,7 @@ Item {
 
                 TextField {
                     id: edit_naim
-                    Layout.fillWidth: true                    
+                    Layout.fillWidth: true
                     Layout.fillHeight: true
                     Layout.topMargin: 1
                     hoverEnabled: true
@@ -194,9 +198,9 @@ Item {
                                         if (event.key === Qt.Key_Return
                                             || event.key === Qt.Key_Escape
                                             || event.key === Qt.Key_Down
-                                            || event.key === Qt.Key_Up) {                                            
-                                            edit_naim.editingFinished();                                            
-                                            event.accepted = true;                                            
+                                            || event.key === Qt.Key_Up) {
+                                            edit_naim.editingFinished();
+                                            event.accepted = true;
                                         }
                                     }
 
@@ -207,7 +211,7 @@ Item {
                     }
                     onPressed: {
                         plistsView.currentIndex = index;
-                    }                    
+                    }
                 }
                 CheckBox {
                      id: cb_isCurrent
@@ -282,14 +286,34 @@ Item {
                 }
             }
 //        }
+//            PlFilesView {
+//                id: plFilesForm
+//                Layout.fillWidth: true
+//                Layout.leftMargin: 30
+//                Layout.minimumHeight: 50
+////                visible: false
+//                visible: plistsView.currentIndex == index ? true : false
+//            }
 
-            PlFilesView {
-                id: plFilesForm
-                Layout.fillWidth: true
-                Layout.leftMargin: 30
-                Layout.minimumHeight: 30
-                visible: plistsView.currentIndex == index ? true : false
-            }
+//            states: [
+//                State {
+//                    name: "CURRENT"
+//                    when: plistsView.currentIndex == index
+//                    PropertyChanges {
+//                        target: filesRect;
+//                        visible: true
+//                    }
+//                },
+//                State {
+//                    name: "NOT_CURRENT"
+//                    when: plistsView.currentIndex != index
+//                    PropertyChanges {
+//                        target: filesRect;
+//                        visible: false
+//                    }
+//                }
+//            ]
         }
     }
+
 }

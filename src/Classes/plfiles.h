@@ -6,6 +6,7 @@
 #include "./Classes/settings.h"
 #include "./Thread/fileworkerthread.h"
 
+
 #include <QObject>
 #include <QVector>
 #include <QModelIndex>
@@ -29,14 +30,14 @@ public:
     bool setItemAt(int index, PlFile &item);
     void addItem(const int &idFile, const int &idPlaylist, const QString &fileName, const QString &filePath,
                  const QString &filePathLocal, const int &idFormat, const bool &isAvailable, const QString &format);
-    void clear();
+
     int rowCount() const;
     QString fileName() const;
 
     int curIndex() const;
 
     int idPlaylist() const;
-    void setIdPlaylist(int idPlaylist);
+    void setIdPlaylist(const int &idPlaylist);
 
     QUrl getCurDir();
     void setCurDir(const QUrl &curDir);
@@ -66,11 +67,12 @@ signals:
                                     const QString &extension, const bool &isValid,
                                     const int &idFormat, const QString &appPath);
     void errorEmited(QString errorMsg);
+    void listChanged();
 
 
 
 public slots:
-    void open(int idPlaylist);
+    void open(const int &idPlaylist = 0);
     void appendNewItem();
     void addItemFromLocalFile(int index, QUrl filePath);
     void addItemFromUrl(int index, QUrl fileUrl);
@@ -88,6 +90,7 @@ public slots:
 
     void extensionChecked(const int &index, QString &fullFilePath, const QString &extension,
                           const bool &isValid, const int &idFormat);
+    void clear();
 
 private:
     QVector<PlFile> m_files;

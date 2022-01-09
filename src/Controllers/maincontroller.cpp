@@ -19,8 +19,8 @@ MainController::MainController(QSqlDatabase db) : m_db(db)
 
 //}
 
-MainController::MainController(DataBase &datab)
-{
+MainController::MainController(DataBase &datab) : m_datB(datab)
+{    
     m_dataB = std::make_shared< DataBase > (datab);
 }
 

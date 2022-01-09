@@ -29,6 +29,7 @@ public:
     void openPlaylistManager();
 
 signals:
+    void filesAdded(const int &idPlaylist);
 
 public slots:
     void addItemsFromDbToPlaylists();

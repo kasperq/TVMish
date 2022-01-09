@@ -17,6 +17,8 @@ ColumnLayout {
     property int width_isAvailable : 50
     property int width_fileName : 100
     property int width_cursor : 12
+    property bool isCurrent: false
+    property int rowsNum: 0
 
     Rectangle {
         id: files_toolbar
@@ -152,12 +154,12 @@ ColumnLayout {
         id: plFilesView
         clip: true
         Layout.fillWidth: true
-        Layout.minimumHeight: {
-            if (plFiles.rowCount === 0)
-                plFiles.rowCount * 20;
-            else
-                plFiles.rowCount * (lbl_cursor.height + 1) + 50;
-        }
+//        Layout.minimumHeight: {
+//            if (plFiles.rowCount === 0)
+//                plFiles.rowCount * 20;
+//            else
+//                plFiles.rowCount * (lbl_cursor.height + 1) + 50;
+//        }
         Layout.fillHeight: true
         keyNavigationEnabled: true
         headerPositioning: ListView.OverlayHeader
@@ -165,7 +167,7 @@ ColumnLayout {
         ScrollBar.vertical: ScrollBar {}
 
         onCurrentIndexChanged: {
-//            console.log("PlFilesView: currentFilesIndex1: " + plFilesView.currentIndex);
+            console.log("PlFilesView: currentFilesIndex1: " + plFilesView.currentIndex);
             indexChanged(plFilesView.currentIndex);
             plFilesView.model.list = plFiles;
         }
@@ -174,8 +176,8 @@ ColumnLayout {
 ////            plFilesView.model.list = plFiles;
 //        }
 
-        model: PlFilesModel  {            
-            list: plFiles
+        model: PlFilesModel  {
+            list: plFiles            
         }
 
         header: Rectangle {
@@ -186,7 +188,7 @@ ColumnLayout {
             border.color: "darkgray"
             color: "gray"
             z: 20
-            visible: plFiles.rowCount > 0 ? true : false
+            visible: rowsNum > 0 ? true : false
 
             RowLayout {
                 anchors.fill: parent
@@ -224,7 +226,8 @@ ColumnLayout {
         }
 
         delegate: ColumnLayout {
-            width: ListView.view.width
+            width: ListView.view.width            
+
             RowLayout {
                 Layout.fillWidth: true
                 focus: true
@@ -282,6 +285,7 @@ ColumnLayout {
                     onPressed: {
                         plFilesView.currentIndex = index;
                     }
+//                    Component.onCompleted: console.log("plfilesview: " + model.file_name)
                 }
                 TextField {
                     id: edit_url
@@ -333,29 +337,36 @@ ColumnLayout {
                         plFilesView.currentIndex = index
                     }
                 }
-                Connections {
-                    target: plFiles
-                    function onSelectItem(index) {
-//                        console.log("PlFilesView: onSelectItem");
-                        if (plFilesView.currentIndex !== index)
-                            plFilesView.currentIndex = index;
-                    }
-                    function onItemChanged(index) {
-//                        console.log("PlFilesView: item changed");
-                        plFilesView.model.list = plFiles;
-                    }
-                    function onRowCountChanged(rows) {
-//                        console.log("PlFilesView: row count changed: " + rows);
-                        plFilesView.model.list = plFiles;
-                    }
-                    function onErrorEmited(errorMsg) {
-                        console.log(errorMsg);
-                        dlg_error.errorText = errorMsg;
-                        dlg_error.open();
-                    }
-                }
+            }
+        }
+        Connections {
+            target: plFiles
+            function onSelectItem(index) {
+//                console.log("PlFilesView: onSelectItem");
+                if (plFilesView.currentIndex !== index)
+                    plFilesView.currentIndex = index;
+            }
+            function onItemChanged(index) {
+//                console.log("PlFilesView: item changed");
+                plFilesView.model.list = plFiles;
+            }
+            function onRowCountChanged(rows) {
+//                console.log("PlFilesView: row count changed: " + rows);
+                plFilesView.model.list = plFiles;
+                rowsNum = plFiles.rowCount;
+            }
+            function onErrorEmited(errorMsg) {
+                console.log(errorMsg);
+                dlg_error.errorText = errorMsg;
+                dlg_error.open();
+            }
+            function onListChanged() {
+//                console.log("PlFilesView: list changed");
+                plFilesView.model.list = plFiles;
+                rowsNum = plFiles.rowCount;
             }
         }
     }
+
 }
 

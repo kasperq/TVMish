@@ -32,7 +32,7 @@ bool TVmish::startApp()
 //        m_mainContr = new MainController(db.db());
 //        m_mainContr.setDb(db);
         m_mainContr.loadMainForm();
-
+        qDebug() << "TVMIsh: " << db.db();
         return true;
     }
     else {

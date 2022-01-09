@@ -12,19 +12,40 @@ Item {
     anchors.fill: parent
     anchors.leftMargin: 3
     anchors.rightMargin: 3
-
-    PlaylistManagerToolbar {
-        id: toolbar
-        anchors.top: parent.top        
-        height: 30
-    }
-
-
-    LViews.PlaylistsView {
-        id: plView
+    ColumnLayout {
         anchors.fill: parent
-        anchors.topMargin: toolbar.height + 1
-//        onIndexChanged : toolbar.curIndex = currentIndex
-        onCurIndexChanged: toolbar.curIndex = plView.curIndex
+        spacing: 1
+        z: -1
+
+        PlaylistManagerToolbar {
+            id: toolbar
+            Layout.preferredHeight: 30
+            Layout.minimumHeight: 30
+            Layout.fillWidth: true
+            z: 0
+        }
+
+
+        LViews.PlaylistsView {
+            id: plView
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.minimumHeight: 200
+            //        onIndexChanged : toolbar.curIndex = currentIndex
+            onCurIndexChanged: toolbar.curIndex = plView.curIndex
+        }
+        LViews.PlFilesView {
+            id: files
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.minimumHeight: 200
+//            Layout.preferredHeight: parent.height / 2
+
+        }
+//        Rectangle {
+//            id: fillerRect
+//            Layout.fillHeight: true
+//            Layout.fillWidth: true
+//        }
     }
 }

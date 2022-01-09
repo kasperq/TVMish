@@ -31,6 +31,7 @@ SOURCES += \
         Models/plfilemodel.cpp \
         Thread/playlistgwthread.cpp \
         Thread/fileworkerthread.cpp \
+        Thread/setsthread.cpp \
         main.cpp
 
 HEADERS += \
@@ -50,7 +51,8 @@ HEADERS += \
     Models/playlistsmodel.h \
     Models/plfilemodel.h \
     Thread/playlistgwthread.h \
-    Thread/fileworkerthread.h
+    Thread/fileworkerthread.h \
+    Thread/setsthread.h
 
 DISTFILES += \
     Qml/MainForm.qml

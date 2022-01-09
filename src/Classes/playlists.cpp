@@ -168,6 +168,7 @@ void Playlists::move(int index, QString type)
 
 void Playlists::indexChanged(int index)
 {
+    qDebug() << "playlistScrolled";
     emit playlistScrolled(m_plLists.at(index).idPlaylist());
 }
 
@@ -246,4 +247,9 @@ int Playlists::rowCount() const
 QString Playlists::naim() const
 {
     return m_plLists.at(0).naim();
+}
+
+int Playlists::curIdPlaylist() const
+{
+    return m_plLists.at(0).idPlaylist();
 }

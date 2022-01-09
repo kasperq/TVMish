@@ -25,6 +25,7 @@ public:
 
     int rowCount() const;
     QString naim() const;
+    int curIdPlaylist() const;
 
 
 signals:

@@ -126,5 +126,5 @@ DBConnPool::DBConnPool()
     m_testSql = "select 1";
     m_maxWaitTime = 1000;
     m_waitInterval = 200;
-    m_maxConnectionCount = 5;
+    m_maxConnectionCount = 15;
 }

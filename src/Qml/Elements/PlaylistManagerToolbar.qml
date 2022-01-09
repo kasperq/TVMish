@@ -5,7 +5,7 @@ import QtQuick.Controls.Universal 2.12
 
 //import "./Elements" as Elements
 
-Rectangle {
+Item {
     id: plLstMngToolbars
     property int curIndex    
 
@@ -14,6 +14,7 @@ Rectangle {
         spacing: 1
         layoutDirection: Qt.LeftToRight
         Layout.alignment: Qt.AlignLeft
+        anchors.fill: parent
 
         ToolBtn {
             id: btn_addPl
@@ -58,6 +59,10 @@ Rectangle {
 //                console.log("plLists.moveDown(): " + curIndex);
                 plLists.move(curIndex, "down");
             }
+        }
+        Rectangle {
+            id: fillerRect
+            Layout.fillWidth: true
         }
 
 //        ToolButton {

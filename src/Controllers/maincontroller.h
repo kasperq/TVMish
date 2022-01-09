@@ -36,7 +36,9 @@ private:
 
     QSqlDatabase m_db;
     std::shared_ptr< DataBase > m_dataB;
-    PlaylistController plContr {engine, *m_dataB};
+    DataBase m_datB;
+//    PlaylistController plContr {engine, *m_dataB};
+    PlaylistController plContr {engine, m_datB};
 };
 
 #endif // MAINCONTROLLER_H
