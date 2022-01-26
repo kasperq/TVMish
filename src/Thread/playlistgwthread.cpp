@@ -2,7 +2,7 @@
 
 PlaylistGwThread::PlaylistGwThread(DataBase &db) : m_db(std::make_shared< DataBase > (db))
 {
-    qDebug() << "PlaylistGwThread constructor";
+    qDebug() << "PlaylistGwThread constructor ";
     connect(&m_plGw, SIGNAL(deleted(const int&, const int&)), this, SIGNAL(deleted(const int&, const int&)));
     connect(&m_plGw, SIGNAL(getNewIdPlaylistAndNum(const int &, const int &, const uint &)),
             this, SIGNAL(getNewIdPlaylistAndNum(const int &, const int &, const uint &)));
@@ -17,7 +17,7 @@ void PlaylistGwThread::insertRecord(const int &index, const QString &naim, const
 
 void PlaylistGwThread::run()
 {
-    qDebug() << "GWThread is running";
+    qDebug() << "GWThread is running ";
 }
 
 void PlaylistGwThread::deleteRecord(const int &idPlaylist, const int &index)

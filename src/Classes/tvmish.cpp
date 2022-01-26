@@ -3,7 +3,9 @@
 
 #include "tvmish.h"
 
-TVmish::TVmish(QString &appPath) : m_appPath(appPath)
+//DBst TVmish::m_dbst;
+
+TVmish::TVmish(QString &appPath, QObject *parent) : QObject(parent), m_appPath(appPath)
 {
 //    m_url = "localhost";
 //#ifdef QT_DEBUG
@@ -11,6 +13,7 @@ TVmish::TVmish(QString &appPath) : m_appPath(appPath)
 //#else
 //    m_dbName = QGuiApplication::applicationDirPath().toStdString() + "/TVDB.db3";
 //#endif
+    qDebug() << "tvmish()";
 }
 
 TVmish::~TVmish()
@@ -18,10 +21,51 @@ TVmish::~TVmish()
     db.disconnect();
 //    delete *db;
 //    delete *mainContr;
+//    m_dbst.quit();
+//    m_dbst.wait();
 }
 
 bool TVmish::startApp()
 {
+    qDebug() << "tvmish " << QThread::currentThreadId();
+//    QString q = "123";
+//    m_dbst.execQuery(q);
+//    m_dbst.open();
+
+    m_dbst.isPrepared().then([this](bool res) {
+        qDebug() << "tvmish is prepared dbst " << res;
+        if (res) {
+            m_dbst.open().then([this](bool openResult) {
+                qDebug() << "tvmish: dbst is " << openResult;
+                if (openResult) {
+//                    QSqlQuery query(m_dbst.db());
+//                    query.prepare("select settings.app_dir, settings.current_pl_dir, settings.id_sets from settings ");
+//                    m_dbst.select(query).then([](QSqlQuery q) {
+//                        qDebug() << "selected ";
+//                        q.first();
+//                        qDebug() << "query: " << q.value("app_dir").toString();
+//                    });
+
+//                    QSqlQuery query(m_dbst.db());
+//                    query.prepare("insert into SETTINGS "
+//                                "(id_sets, app_dir, current_pl_dir) "
+//                                "values (5, '123', '456' ) ");
+
+//                    QSqlQuery query1(m_dbst.db());
+//                    query1.prepare("insert into SETTINGS "
+//                                "(id_sets, app_dir, current_pl_dir) "
+//                                "values (6, '123', '456' ) ");
+
+//                    m_dbst.insert(query);
+//                    m_dbst.insert(query1);
+                } else {
+
+                }
+            });
+        }
+    });
+
+    qDebug() << "tvmish time: " << QTime::currentTime();
 //    db = new DataBase();
     if (db.connect()) {
         m_sets.setDB(db.db());
@@ -32,7 +76,7 @@ bool TVmish::startApp()
 //        m_mainContr = new MainController(db.db());
 //        m_mainContr.setDb(db);
         m_mainContr.loadMainForm();
-        qDebug() << "TVMIsh: " << db.db();
+//        qDebug() << "TVMIsh: " << db.db();
         return true;
     }
     else {

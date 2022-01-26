@@ -1,7 +1,9 @@
-QT += qml \
+QT += concurrent \
+        qml \
       quick \
       sql \
-      widgets
+      widgets \      
+      core
 TARGET = TVmish
 TEMPLATE = app
 
@@ -25,12 +27,14 @@ SOURCES += \
         Controllers/playlistcontroller.cpp \
         DB/database.cpp \
         DB/dbconnpool.cpp \
+        DB/dbst.cpp \
         Gateways/playlistgw.cpp \
         Gateways/plfilegw.cpp \
         Models/playlistsmodel.cpp \
         Models/plfilemodel.cpp \
         Thread/playlistgwthread.cpp \
         Thread/fileworkerthread.cpp \
+        Thread/poolthread.cpp \
         Thread/setsthread.cpp \
         main.cpp
 
@@ -46,12 +50,14 @@ HEADERS += \
     Controllers/playlistcontroller.h \
     DB/database.h \
     DB/dbconnpool.h \
+    DB/dbst.h \
     Gateways/playlistgw.h \
     Gateways/plfilegw.h \
     Models/playlistsmodel.h \
     Models/plfilemodel.h \
     Thread/playlistgwthread.h \
     Thread/fileworkerthread.h \
+    Thread/poolthread.h \
     Thread/setsthread.h
 
 DISTFILES += \

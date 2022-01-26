@@ -7,13 +7,15 @@
 #include "Controllers/maincontroller.h"
 #include "settings.h"
 
+#include "DB/dbst.h"
+
 //#include <QGuiApplication>
 
 class TVmish : public QObject
 {
     Q_OBJECT
 public:
-    TVmish(QString &appPath);
+    TVmish(QString &appPath, QObject *parent);
     virtual ~TVmish();
 
     bool startApp();
@@ -24,6 +26,8 @@ private:
     DataBase db;
     MainController m_mainContr {db};
     Settings m_sets;
+    DBst m_dbst;
+
 
     std::string m_url;
     std::string m_dbName;

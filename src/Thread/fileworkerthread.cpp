@@ -1,8 +1,13 @@
 #include "fileworkerthread.h"
 
-FileWorkerThread::FileWorkerThread()
-{
+//FileWorkerThread::FileWorkerThread()
+//{
+//    qDebug() << "fileworkerthread() " << this->thread();
+//}
 
+FileWorkerThread::FileWorkerThread(QObject *parent) : QThread(parent)
+{
+    qDebug() << "fileworkerthread() " << QThread::currentThreadId() << " parent " << parent;
 }
 
 void FileWorkerThread::copyFile(QString &oldPath, QString &newPath)
@@ -55,7 +60,8 @@ void FileWorkerThread::extensionChecked(const int &index, QString &fullFilePath,
 
 void FileWorkerThread::run()
 {
-    qDebug() << "FileWorkerThread is running";
+    qDebug() << "FileWorkerThread is running " << QThread::currentThreadId()  << " parent " << QThread::parent();
+
 }
 
 void FileWorkerThread::copyFile(const int &index, const QUrl &filePath)

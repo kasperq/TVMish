@@ -13,16 +13,19 @@ PlFiles::PlFiles(QObject *parent) : QObject(parent)
     m_idPlaylist = 1;
     initConnections();
 
+//    m_plThr = new FileWorkerThread(this);
     m_plThr.start();
+
 //    m_sets = std::make_shared<Settings>();
 }
 
-PlFiles::PlFiles(Settings &sets) : m_sets(std::make_shared< Settings> (sets))
+PlFiles::PlFiles(Settings &sets, QObject *parent) : QObject(parent), m_sets(std::make_shared< Settings> (sets))
 {
     qDebug() << "constructor without params PlFiles";
     m_idPlaylist = 1;
     initConnections();
 
+//    m_plThr = new FileWorkerThread(this);
     m_plThr.start();
 //    m_sets = std::make_shared<Settings>();
 }
@@ -375,6 +378,8 @@ void PlFiles::initConnections()
     connect(&m_plThr, SIGNAL(fileCopied(QString,QString,QString,QString,int,bool,int)),
             this, SLOT(addCopiedFileInfo(QString,QString,QString,QString,int,bool,int)));
     connect(&m_plThr, SIGNAL(error(QString)), this, SLOT(fileNotCopied(QString)));
+
+//    connect(&m_plThr, &FileWorkerThread::copyFinished, &m_plThr, &FileWorkerThread::deleteLater);
 }
 
 void PlFiles::copyFinished()

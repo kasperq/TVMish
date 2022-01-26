@@ -15,7 +15,10 @@ class FileWorkerThread : public QThread
 {
     Q_OBJECT
 public:
-    FileWorkerThread();
+//    FileWorkerThread();
+    FileWorkerThread(QObject *parent = nullptr);
+
+    void run() override;
 
     void copyFile(const int &index, const QUrl &filePath);
     void copyFile(QString &oldPath, QString &newPath);
@@ -37,7 +40,7 @@ private:
     QFile m_file;
     QString msg {tr("")};
 
-    void run() override;
+    int type {1};
 };
 
 #endif // PLAYLISTTHREAD_H

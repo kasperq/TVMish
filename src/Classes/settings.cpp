@@ -17,9 +17,7 @@ Settings::Settings(const QSqlDatabase &db) : m_db(db)
 {
 //    SetsThread m_setsThr {m_db};
 //    m_setsThr.start();
-    qDebug() << "db1: " << db;
     getSets();
-    qDebug() << "db2: " << db;
 }
 
 Settings::~Settings()
@@ -81,7 +79,7 @@ void Settings::countRows()
 
 void Settings::getSets()
 {
-    qDebug() << "getSets " << m_db;
+//    qDebug() << "getSets " << m_db;
     q_select = QSqlQuery(m_db);
     q_select.prepare("select settings.app_dir, settings.current_pl_dir, settings.id_sets from settings ");
     q_select.exec();

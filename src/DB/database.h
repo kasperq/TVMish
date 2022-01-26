@@ -25,6 +25,8 @@ public:
 private:
     QSqlDatabase m_db;
 
+
+
 //    static DBConnPool m_pool;
 };
 

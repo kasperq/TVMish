@@ -22,7 +22,7 @@ class PlFiles : public QObject
 
 public:    
     PlFiles(QObject *parent = nullptr);
-    PlFiles(Settings &sets);
+    PlFiles(Settings &sets, QObject *parent);
 //    PlFiles* operator=(const PlFiles* orig);
     virtual ~PlFiles();
 
@@ -95,7 +95,7 @@ public slots:
 private:
     QVector<PlFile> m_files;
     std::shared_ptr< Settings > m_sets;
-    FileWorkerThread m_plThr;
+    FileWorkerThread m_plThr {this};
 
     QString m_fileName;
     QStringList m_filesName;

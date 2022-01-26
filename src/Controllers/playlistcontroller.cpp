@@ -7,10 +7,9 @@ PlaylistController::PlaylistController(QQmlApplicationEngine &engine, DataBase &
     m_engine(&engine),
     m_db(std::make_shared< DataBase > (db))
 {
-    qDebug() << "PlaylistController constructor: " << m_db->db();
+    qDebug() << "PlaylistController constructor: ";
     //    m_db = std::make_shared< DataBase > (db);
     m_sets = std::make_shared< Settings > (m_db->db());    
-    qDebug() << "PlContr end: " << m_db->db();
 }
 
 //PlaylistController::PlaylistController()
@@ -41,7 +40,6 @@ void PlaylistController::openPlaylistManager()
     initFilesConnections();
     openFiles();
     qDebug() << "plContr: ";
-    qDebug() << "plcontr: " << m_db->db();
 }
 
 void PlaylistController::addItemsFromDbToPlaylists()
