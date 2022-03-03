@@ -60,6 +60,8 @@ public slots:
 
 private:
     QVector<Playlist> m_plLists;
+
+    int m_curIdPlaylist {};
 };
 
 #endif // PLAYLISTS_H

@@ -26,7 +26,7 @@ int PlFile::idPlaylist() const
 }
 
 void PlFile::setIdPlaylist(const int &value)
-{
+{    
     m_idPlaylist = value;
 }
 

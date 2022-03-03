@@ -97,6 +97,7 @@ void Playlists::addItem()
 
 void Playlists::removeItem(int index)
 {
+    qDebug() << "playlists: removeItem: " << index;
     int id = m_plLists.at(index).idPlaylist();
 
     emit itemToDelete(id, index);
@@ -169,6 +170,7 @@ void Playlists::move(int index, QString type)
 void Playlists::indexChanged(int index)
 {
     qDebug() << "playlistScrolled";
+    m_curIdPlaylist = m_plLists.at(index).idPlaylist();
     emit playlistScrolled(m_plLists.at(index).idPlaylist());
 }
 
@@ -221,6 +223,7 @@ void Playlists::setItemIdPlaylistAndNum(const int &index, const int &idPlaylist,
 void Playlists::itemRemoved(const int &idPlaylist, const int &index)
 {
     emit beforeItemRemoved(index);
+    qDebug() << "playlists: itemRemoved: id: " << idPlaylist << " index: " << index;
     int curIndex;
     if (index == m_plLists.size() - 1)
         curIndex = m_plLists.size() - 2;
@@ -251,5 +254,6 @@ QString Playlists::naim() const
 
 int Playlists::curIdPlaylist() const
 {
-    return m_plLists.at(0).idPlaylist();
+    return m_curIdPlaylist;
+//    return m_plLists.at(0).idPlaylist();
 }

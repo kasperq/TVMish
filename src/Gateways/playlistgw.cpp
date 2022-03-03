@@ -1,6 +1,8 @@
 #include "playlistgw.h"
 
-PlaylistGW::PlaylistGW(QObject *parent, QSqlDatabase db) : QObject(parent), m_db(db)
+#include "DB/dbst.h"
+
+PlaylistGW::PlaylistGW(QObject *parent/*, QSqlDatabase db*/) : QObject(parent)/*, m_db(db)*/
 {
     qDebug() << "PlaylistGW constructor";
 //    select();
@@ -19,11 +21,15 @@ int PlaylistGW::rows() const
 void PlaylistGW::select()
 {
 //    q_select = new QSqlQuery(m_db);
-    q_select = QSqlQuery(m_db);
+    DBst::getInstance().startTransDB();
+    q_select = QSqlQuery(/*m_db*/DBst::getInstance().db_def());
     q_select.prepare("select PLAYLIST.ID_PLAYLIST, PLAYLIST.NAIM, PLAYLIST.IS_CURRENT, coalesce(PLAYLIST.NUM,0) NUM "
                       "from PLAYLIST "
                       "order by PLAYLIST.NUM ");
-    q_select.exec();
+//    q_select.exec();
+    QFuture<QSqlQuery> future = DBst::getInstance().execAndGetQuery(q_select);
+    qDebug() << "";
+    q_select = future.result();
     calcRowCount();
 
     emit selected();
@@ -31,7 +37,8 @@ void PlaylistGW::select()
 
 void PlaylistGW::insert(Playlist *newItem)
 {    
-    q_insert = QSqlQuery(m_db);
+    DBst::getInstance().startTransDB();
+    q_insert = QSqlQuery(/*m_db*/DBst::getInstance().db_def());
     q_insert.prepare("insert into PLAYLIST "
                       "(ID_PLAYLIST, NAIM, IS_CURRENT) "
                       "values (:id_playlist, :naim, :is_current) ");
@@ -41,17 +48,29 @@ void PlaylistGW::insert(Playlist *newItem)
     int newId = getMaxId() + 1;
     qDebug() << "newId: " << newId;
     q_insert.bindValue(":id_playlist", newId);
-    q_insert.exec();
 
-    newItem->setIdPlaylist(newId);
-    uint num = getCurNum(newId);
-    qDebug() << "maxNum: " << num;
-    newItem->setNum(num);
+    DBst::getInstance().execAndCheck(q_insert).then([this, newItem, newId](bool result) {
+        if (result) {
+            DBst::getInstance().commitDbDef();
+            q_insert.finish();
+            newItem->setIdPlaylist(newId);
+            uint num = getCurNum(newId);
+            qDebug() << "maxNum: " << num;
+            newItem->setNum(num);
+        }
+    });
+
+//    q_insert.exec();
+//    newItem->setIdPlaylist(newId);
+//    uint num = getCurNum(newId);
+//    qDebug() << "maxNum: " << num;
+//    newItem->setNum(num);
 }
 
 void PlaylistGW::insert(const int &index, const QString &naim, const bool &isCurrent)
 {
-    q_insert = QSqlQuery(m_db);
+    DBst::getInstance().startTransDB();
+    q_insert = QSqlQuery(/*m_db*/DBst::getInstance().db_def());
     q_insert.prepare("insert into PLAYLIST "
                       "(ID_PLAYLIST, NAIM, IS_CURRENT) "
                       "values (:id_playlist, :naim, :is_current) ");
@@ -61,16 +80,26 @@ void PlaylistGW::insert(const int &index, const QString &naim, const bool &isCur
     int newId = getMaxId() + 1;
 
     q_insert.bindValue(":id_playlist", newId);
-    q_insert.exec();
-    uint num = getCurNum(newId);
-    q_insert.finish();
 
-    emit getNewIdPlaylistAndNum(index, newId, num);
+    DBst::getInstance().execAndCheck(q_insert).then([this, newId, index](bool result) {
+        if (result) {
+            uint num = getCurNum(newId);
+            DBst::getInstance().commitDbDef();
+            q_insert.finish();
+            emit getNewIdPlaylistAndNum(index, newId, num);
+        }
+    });
+//    q_insert.exec();
+//    uint num = getCurNum(newId);
+//    q_insert.finish();
+
+//    emit getNewIdPlaylistAndNum(index, newId, num);
 }
 
 void PlaylistGW::modify(const int &idPlaylist, const QString &naim, const bool &isCurrent, const uint &num)
 {    
-    q_modify = QSqlQuery(m_db);
+    DBst::getInstance().startTransDB();
+    q_modify = QSqlQuery(/*m_db*/DBst::getInstance().db_def());
     q_modify.prepare("update PLAYLIST "
                       "set ID_PLAYLIST = :id_playlist, NAIM = :naim, IS_CURRENT = :is_current, NUM = :num "
                       "where id_playlist = :id_playlist ");
@@ -78,19 +107,35 @@ void PlaylistGW::modify(const int &idPlaylist, const QString &naim, const bool &
     q_modify.bindValue(":naim", naim);
     q_modify.bindValue(":is_current", isCurrent);
     q_modify.bindValue(":num", num);
-    q_modify.exec();
-    q_modify.finish();
+
+    DBst::getInstance().execAndCheck(q_modify).then([this](bool result) {
+        if (result) {
+            DBst::getInstance().commitDbDef();
+            q_modify.finish();
+        }
+    });
+//    q_modify.exec();
+//    q_modify.finish();
 }
 
 void PlaylistGW::deleteRecord(const int &idPlaylist, const int &index)
 {        
-    q_delete = QSqlQuery(m_db);
+    qDebug() << "PlGW: deleteRecord: idPlaylist: " << idPlaylist << " index: " << index;
+    DBst::getInstance().startTransDB();
+    q_delete = QSqlQuery(/*m_db*/DBst::getInstance().db_def());
     q_delete.prepare("delete from PLAYLIST where id_playlist = :id_playlist ");
     q_delete.bindValue(":id_playlist", idPlaylist);
-    q_delete.exec();    
 
-    q_delete.finish();
-    emit deleted(idPlaylist, index);
+    DBst::getInstance().execAndCheck(q_delete).then([this, idPlaylist, index](bool result) {
+        if (result) {
+            DBst::getInstance().commitDbDef();
+            q_delete.finish();
+            emit deleted(idPlaylist, index);
+        }
+    });
+//    q_delete.exec();
+//    q_delete.finish();
+//    emit deleted(idPlaylist, index);
 }
 
 QSqlQuery *PlaylistGW::data() const
@@ -100,20 +145,25 @@ QSqlQuery *PlaylistGW::data() const
 
 void PlaylistGW::calcRowCount()
 {
-    m_rows = 0;
+    m_rows = 0;    
     if (q_select.first()) {
         do {
             ++m_rows;
-        }
-        while (q_select.next());
+        } while (q_select.next());
+        q_select.first();
     }
-
 }
 
 int PlaylistGW::getMaxId()
 {
-    q_temp = QSqlQuery(m_db);
-    q_temp.exec("select max(playlist.id_playlist) max_id from playlist");
+    DBst::getInstance().startTransDB();
+    q_temp = QSqlQuery(/*m_db*/DBst::getInstance().db_def());
+    q_temp.prepare("select max(playlist.id_playlist) max_id from playlist");
+
+    QFuture<QSqlQuery> future = DBst::getInstance().execAndGetQuery(q_temp);
+    qDebug() << "";
+    q_temp = future.result();
+
     q_temp.first();
     int maxId {q_temp.value(0).toInt()};
     q_temp.finish();
@@ -122,10 +172,16 @@ int PlaylistGW::getMaxId()
 
 int PlaylistGW::getCurNum(const int &id)
 {
-    q_temp = QSqlQuery(m_db);
+    DBst::getInstance().startTransDB();
+    q_temp = QSqlQuery(/*m_db*/DBst::getInstance().db_def());
     q_temp.prepare("select playlist.num from playlist where playlist.id_playlist = :id_playlist ");
     q_temp.bindValue(":id_playlist", id);
-    q_temp.exec();
+
+    QFuture<QSqlQuery> future = DBst::getInstance().execAndGetQuery(q_temp);
+    qDebug() << "";
+    q_temp = future.result();
+
+//    q_temp.exec();
     q_temp.first();
     int newId {q_temp.value(0).toInt()};
     q_temp.finish();

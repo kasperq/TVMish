@@ -13,7 +13,7 @@ class PlaylistGW : public QObject
 {
     Q_OBJECT
 public:
-    PlaylistGW(QObject *parent = nullptr, QSqlDatabase db = QSqlDatabase());
+    PlaylistGW(QObject *parent = nullptr/*, QSqlDatabase db = QSqlDatabase()*/);
     virtual ~PlaylistGW();
 
     int rows() const;
@@ -34,7 +34,7 @@ public slots:
     void deleteRecord(const int &idPlaylist, const int &index);
 
 private:
-    QSqlDatabase m_db;
+//    QSqlDatabase m_db;
 
     QSqlQuery q_select;
     QSqlQuery q_modify;

@@ -17,7 +17,12 @@ win32 {
 
 SOURCES += \
         ./Classes/tvmish.cpp \
+        Classes/categories.cpp \
+        Classes/category.cpp \
+        Classes/channel.cpp \
+        Classes/channels.cpp \
         Classes/filecopier.cpp \
+        Classes/filedownloader.cpp \
         Classes/playlist.cpp \
         Classes/playlists.cpp \
         Classes/plfile.cpp \
@@ -28,19 +33,28 @@ SOURCES += \
         DB/database.cpp \
         DB/dbconnpool.cpp \
         DB/dbst.cpp \
+        Gateways/categorygw.cpp \
+        Gateways/channelgw.cpp \
         Gateways/playlistgw.cpp \
         Gateways/plfilegw.cpp \
         Models/playlistsmodel.cpp \
         Models/plfilemodel.cpp \
+        Thread/filecopythread.cpp \
         Thread/playlistgwthread.cpp \
-        Thread/fileworkerthread.cpp \
+        Thread/playlistparsethread.cpp \
         Thread/poolthread.cpp \
         Thread/setsthread.cpp \
         main.cpp
 
 HEADERS += \
     ./Classes/tvmish.h \
+    Classes/additional.h \
+    Classes/categories.h \
+    Classes/category.h \
+    Classes/channel.h \
+    Classes/channels.h \
     Classes/filecopier.h \
+    Classes/filedownloader.h \
     Classes/playlist.h \
     Classes/playlists.h \
     Classes/plfile.h \
@@ -51,12 +65,15 @@ HEADERS += \
     DB/database.h \
     DB/dbconnpool.h \
     DB/dbst.h \
+    Gateways/categorygw.h \
+    Gateways/channelgw.h \
     Gateways/playlistgw.h \
     Gateways/plfilegw.h \
     Models/playlistsmodel.h \
     Models/plfilemodel.h \
+    Thread/filecopythread.h \
     Thread/playlistgwthread.h \
-    Thread/fileworkerthread.h \
+    Thread/playlistparsethread.h \
     Thread/poolthread.h \
     Thread/setsthread.h
 

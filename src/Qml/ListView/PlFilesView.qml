@@ -20,6 +20,14 @@ ColumnLayout {
     property bool isCurrent: false
     property int rowsNum: 0
 
+    property string color_current : "dimgray"
+    property string color_hoverAndEnabled : "gray"
+    property string color_hoverAndDisabled : "dimgray"
+    property string color_notHoverAndNotCurInd : "dimgray"
+    property string color_notHoverAndCurInd : "#3f3f40"
+
+    property string newFilePath
+
     Rectangle {
         id: files_toolbar
         height: 20
@@ -31,19 +39,28 @@ ColumnLayout {
         Elements.PlFileLocation {
             id: _fileLocation
             anchors.centerIn: Overlay.overlay            
-            onOkClicked: {                
+            onOkClicked: {
+                console.log("okClicked");
                 plFiles.appendNewItem();
 //                plFiles.addItemFromLocalFile(plFilesView.currentIndex, _fileLocation.fileUrl);
 //                plFiles.setFilePath(plFilesView.currentIndex, _fileLocation.file_path);
             }
-            onLocalFileSelected: {                
+            onLocalFileSelected: {
+                console.log("onLocalFileselect: " + plFilesView.currentIndex);
                 plFiles.addItemFromLocalFile(plFilesView.currentIndex, _fileLocation.fileUrl);
+            }
+            onBuferUrlSelected: {
+                console.log("onBuferUrlSelect: " + plFilesView.currentIndex);
+                plFiles.addItemFromBuffer(plFilesView.currentIndex, _fileLocation.fileUrl);
+            }
+            onUrlFileSelected: {
+                console.log("onUrlFileSelected: " + plFilesView.currentIndex);
+                plFiles.addItemFromUrl(plFilesView.currentIndex, _fileLocation.fileUrl);
             }
 
             onCancelClicked: {
                 console.log("plfilesview: cancel clicked");
             }
-
         }
         Elements.ErrorDialog {
             id: dlg_error
@@ -65,6 +82,19 @@ ColumnLayout {
             cancelBtnText: qsTr("No")
             onOkClicked: {
                 plFiles.removeCurrentItem(plFilesView.currentIndex);
+            }
+        }
+        Elements.SureDialog {
+            id: dlg_addChannels
+            width: 350
+            height: 80
+            anchors.centerIn: Overlay.overlay
+            titleText: qsTr("Warning");
+            questionText: qsTr("Are you sure you want to update channels?")
+            okBtnText: qsTr("Yes")
+            cancelBtnText: qsTr("No")
+            onOkClicked: {
+                channels.update(newFilePath);
             }
         }
 
@@ -101,10 +131,12 @@ ColumnLayout {
                 btn_text: qsTr("+")
                 ico_path: ""
                 onClicked: {
-                    console.log("changed target: " + allChannelsBtn.checked);
+//                    console.log("addBtn: " + plFilesView.currentIndex);
+//                    console.log("changed target: " + allChannelsBtn.checked);
                     if (allChannelsBtn.checked) {
                         allChannelsBtn.checked = false;
                     }
+                    _fileLocation.file_path = plFiles.getClipboardString();
                     _fileLocation.open();
 //                    plFiles.addItem();
                 }
@@ -119,11 +151,16 @@ ColumnLayout {
                 btn_text: qsTr("-")
                 ico_path: ""
                 onClicked: {
-                    if (allChannelsBtn.checked) {
-                        allChannelsBtn.checked = false;
+                    if (plFilesView.currentIndex == -1) {
+                        dlg_error.errorText = qsTr("Choose file!");
+                        dlg_error.open();
+                    } else {
+                        if (allChannelsBtn.checked) {
+                            allChannelsBtn.checked = false;
+                        }
+                        dlg_delete.open();
+                        //                    plFiles.removeCurrentItem(plFilesView.currentIndex);
                     }
-                    dlg_delete.open();
-//                    plFiles.removeCurrentItem(plFilesView.currentIndex);
                 }
             }
             Elements.ToolBtn {
@@ -139,6 +176,7 @@ ColumnLayout {
                     if (allChannelsBtn.checked) {
                         allChannelsBtn.checked = false;
                     }
+                    plFiles.refresh(plFilesView.currentIndex);
 //                    plFiles.update(plFilesView.currentIndex);
                 }
             }
@@ -167,9 +205,10 @@ ColumnLayout {
         ScrollBar.vertical: ScrollBar {}
 
         onCurrentIndexChanged: {
-            console.log("PlFilesView: currentFilesIndex1: " + plFilesView.currentIndex);
+//            console.log("PlFilesView: currentFilesIndex1: " + plFilesView.currentIndex);
             indexChanged(plFilesView.currentIndex);
             plFilesView.model.list = plFiles;
+            plFiles.scroll(plFilesView.currentIndex);
         }
 //        Component.onCompleted: {
 //            console.log("onCompleted");
@@ -226,25 +265,68 @@ ColumnLayout {
         }
 
         delegate: ColumnLayout {
-            width: ListView.view.width            
+            width: ListView.view.width
+            anchors.topMargin: 2
+            anchors.leftMargin: 3
+            z: 1
+            clip: false
+
+            function setColor(curControl, curIndex) {
+                if (curControl.hovered) {
+                    if (curControl.activeFocus) {
+                        return "lightgray";
+                    } else {
+                        if (curControl.enabled) {
+                            return color_hoverAndEnabled;
+                        } else {
+                            return color_hoverAndDisabled;
+                        }
+                    }
+                } else {
+                    if (curControl.activeFocus) {
+                        return "lightgray";
+                    } else {
+                        if (curIndex === plFilesView.currentIndex) {
+                            return color_notHoverAndCurInd;
+                        } else {
+                            return color_notHoverAndNotCurInd;
+                        }
+                    }
+                }
+            }
 
             RowLayout {
                 Layout.fillWidth: true
+                Layout.minimumHeight: 30
+                Layout.maximumHeight: 30
+                spacing: 1
                 focus: true
 
-                TextEdit {
+                TextField {
                     id: lbl_cursor
                     text: plFilesView.currentIndex == index ? ">" : "  "
-                    color: "steelblue"
-                    Layout.maximumWidth: 10
-                    Layout.maximumHeight: 20
+                    color: "powderblue"
+                    hoverEnabled: true
+                    Layout.fillHeight: true
+                    Layout.minimumWidth: width_cursor
+                    Layout.maximumWidth: width_cursor
+                    Layout.topMargin: 1
                     readOnly: true
                     wrapMode: Text.WordWrap
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
                     selectByMouse: true
                     font.pixelSize: 16
                     font.bold: true
                     KeyNavigation.down: bottom
                     KeyNavigation.up: top
+
+                    background: Rectangle {
+                        id: back_cur
+                        anchors.fill: parent
+                        radius: 2
+                        color: setColor(lbl_cursor, index)
+                    }
 
                     MouseArea {
                         hoverEnabled: true
@@ -258,6 +340,8 @@ ColumnLayout {
                 TextField {
                     id: edit_naim
                     Layout.fillWidth: true
+                    Layout.topMargin: 1
+                    Layout.fillHeight: true
                     hoverEnabled: true
                     KeyNavigation.down: bottom
                     KeyNavigation.up: top
@@ -285,11 +369,26 @@ ColumnLayout {
                     onPressed: {
                         plFilesView.currentIndex = index;
                     }
+                    background: Rectangle {
+                        id: back_naim
+                        anchors.fill: parent
+                        radius: 2
+                        color: setColor(edit_naim, index)
+                        border.color: {
+                            if (edit_naim.activeFocus) {
+                                "skyblue";
+                            } else {
+                                "transparent";
+                            }
+                        }
+                    }
 //                    Component.onCompleted: console.log("plfilesview: " + model.file_name)
                 }
                 TextField {
                     id: edit_url
                     Layout.fillWidth: true
+                    Layout.topMargin: 1
+                    Layout.fillHeight: true
                     hoverEnabled: true
                     KeyNavigation.down: bottom
                     KeyNavigation.up: top
@@ -317,15 +416,57 @@ ColumnLayout {
                     onPressed: {
                         plFilesView.currentIndex = index;
                     }
+                    background: Rectangle {
+                        id: back_url
+                        anchors.fill: parent
+                        radius: 2
+                        color: setColor(edit_url, index)
+                        border.color: {
+                            if (edit_url.activeFocus) {
+                                "skyblue";
+                            } else {
+                                "transparent";
+                            }
+                        }
+                    }
                 }
                 CheckBox {
-                    width: 30
-                    height: 30
+                    id: cb_isAvailable
+                    Layout.fillHeight: true
+                    Layout.minimumWidth: width_isAvailable
+                    Layout.maximumWidth: width_isAvailable
+                    Layout.topMargin: 1
                     checked: model.is_available
 
                     onClicked: {
                         model.is_available = checked;
                         plFilesView.currentIndex = index;
+                    }
+
+                    indicator: Rectangle {
+                        id: indicator_out
+                        implicitWidth: width_isAvailable / 2
+                        implicitHeight: width_isAvailable / 2
+                        anchors.centerIn: cb_isAvailable
+                        radius: 15
+                        border.color: cb_isAvailable.down ? "lightgray" : "dimgray"
+                        border.width: 2
+
+                        Rectangle {
+                            width: indicator_out.width - 4 - indicator_out.border.width
+                            height: indicator_out.height - 4 - indicator_out.border.width
+                            anchors.horizontalCenter: indicator_out.horizontalCenter
+                            anchors.verticalCenter: indicator_out.verticalCenter
+                            radius: 15
+                            color: cb_isAvailable.down ? "lightgray" : "dimgray"
+                            visible: cb_isAvailable.checked
+                        }
+                    }
+                    background: Rectangle {
+                        id: back_cbIsAvailable
+                        anchors.fill: cb_isAvailable
+                        radius: 2
+                        color: setColor(cb_isAvailable, index)
                     }
                 }
 
@@ -364,6 +505,11 @@ ColumnLayout {
 //                console.log("PlFilesView: list changed");
                 plFilesView.model.list = plFiles;
                 rowsNum = plFiles.rowCount;
+            }
+            function onFileFullyAdded(filePath) {
+                console.log("file fully added: " + filePath);
+                newFilePath = filePath;
+                dlg_addChannels.open();
             }
         }
     }

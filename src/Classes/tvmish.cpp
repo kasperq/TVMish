@@ -3,8 +3,6 @@
 
 #include "tvmish.h"
 
-//DBst TVmish::m_dbst;
-
 TVmish::TVmish(QString &appPath, QObject *parent) : QObject(parent), m_appPath(appPath)
 {
 //    m_url = "localhost";
@@ -14,30 +12,42 @@ TVmish::TVmish(QString &appPath, QObject *parent) : QObject(parent), m_appPath(a
 //    m_dbName = QGuiApplication::applicationDirPath().toStdString() + "/TVDB.db3";
 //#endif
     qDebug() << "tvmish()";
+    connect(this, SIGNAL(readyForLoadApp()), this, SLOT(loadApp()));
 }
 
 TVmish::~TVmish()
 {
-    db.disconnect();
+    DBst::getInstance().close();
+    DBst::getInstance().closeInstance();
+//    db.disconnect();
+
 //    delete *db;
 //    delete *mainContr;
-//    m_dbst.quit();
-//    m_dbst.wait();
 }
 
 bool TVmish::startApp()
 {
-    qDebug() << "tvmish " << QThread::currentThreadId();
-//    QString q = "123";
-//    m_dbst.execQuery(q);
-//    m_dbst.open();
-
-    m_dbst.isPrepared().then([this](bool res) {
+    DBst::getInstance().isPrepared().then([this] (bool res) {
         qDebug() << "tvmish is prepared dbst " << res;
         if (res) {
-            m_dbst.open().then([this](bool openResult) {
+            DBst::getInstance().open().then([this](bool openResult) {
                 qDebug() << "tvmish: dbst is " << openResult;
-                if (openResult) {
+
+                emit readyForLoadApp();
+            });
+        } else {
+            QMessageBox msgBox;
+            msgBox.setText(tr("DB missing! Reinstall app."));
+            msgBox.exec();
+        }
+    });
+    return true;
+//    m_dbst.isPrepared().then([this](bool res) {
+//        qDebug() << "tvmish is prepared dbst " << res;
+//        if (res) {
+//            m_dbst.open().then([this](bool openResult) {
+//                qDebug() << "tvmish: dbst is " << openResult;
+//                if (openResult) {
 //                    QSqlQuery query(m_dbst.db());
 //                    query.prepare("select settings.app_dir, settings.current_pl_dir, settings.id_sets from settings ");
 //                    m_dbst.select(query).then([](QSqlQuery q) {
@@ -51,39 +61,40 @@ bool TVmish::startApp()
 //                                "(id_sets, app_dir, current_pl_dir) "
 //                                "values (5, '123', '456' ) ");
 
-//                    QSqlQuery query1(m_dbst.db());
-//                    query1.prepare("insert into SETTINGS "
-//                                "(id_sets, app_dir, current_pl_dir) "
-//                                "values (6, '123', '456' ) ");
-
 //                    m_dbst.insert(query);
-//                    m_dbst.insert(query1);
-                } else {
+//                } else {
 
-                }
-            });
-        }
-    });
+//                }
+//            });
+//        }
+//    });
 
-    qDebug() << "tvmish time: " << QTime::currentTime();
 //    db = new DataBase();
-    if (db.connect()) {
-        m_sets.setDB(db.db());
+//    if (db.connect()) {
+//        m_sets.setDB(db.db());
 //        m_sets = new Settings(db->db());
-        if (m_appPath != m_sets.appPath())
-            m_sets.setAppPath(m_appPath);
+//        if (m_appPath != m_sets.appPath())
+//            m_sets.setAppPath(m_appPath);
 
 //        m_mainContr = new MainController(db.db());
 //        m_mainContr.setDb(db);
-        m_mainContr.loadMainForm();
+//        m_mainContr.loadMainForm();
 //        qDebug() << "TVMIsh: " << db.db();
-        return true;
-    }
-    else {
-        QMessageBox msgBox;
-        msgBox.setText(tr("DB missing! Reinstall app."));
-        msgBox.exec();
+//        return true;
+//    }
+//    else {
+//        QMessageBox msgBox;
+//        msgBox.setText(tr("DB missing! Reinstall app."));
+//        msgBox.exec();
 
-        return false;
-    }
+//        return false;
+    //    }
+}
+
+void TVmish::loadApp()
+{
+    m_sets.getSets();
+    if (m_appPath != m_sets.appPath())
+        m_sets.setAppPath(m_appPath);
+    m_mainContr.loadMainForm();
 }

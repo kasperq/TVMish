@@ -11,6 +11,25 @@
 
 #include <QTime>
 
+QMutex DBst::m_mutex;
+QAtomicPointer<DBst> DBst::m_instance = nullptr;
+QWaitCondition DBst::m_waitCondition;
+
+DBst &DBst::getInstance()
+{
+#ifndef Q_ATOMIC_POINTER_TEST_AND_SET_IS_ALWAYS_NATIVE
+    if (!QAtomicPointer<DBst>::isTestAndSetNative())
+        qDebug() << "Error: TestAndSetNative not supported!";
+#endif
+    {
+        QMutexLocker locker(&m_mutex);
+        if (m_instance.testAndSetOrdered(nullptr, nullptr)) {
+            m_instance.testAndSetOrdered(nullptr, new DBst);
+        }
+        return *m_instance.loadAcquire();
+    }
+}
+
 DBst::DBst(QObject *parent) : QObject(parent)
 {
     initDbSets();
@@ -19,6 +38,28 @@ DBst::DBst(QObject *parent) : QObject(parent)
 DBst::DBst()
 {
     initDbSets();
+}
+
+DBst::DBst(const DBst &value, QObject *parent) : QObject(parent)
+{
+    *this = value;    
+}
+
+DBst &DBst::operator=(const DBst &value)
+{
+    *this = value;
+    return *this;
+}
+
+bool DBst::isDbThrOpened() const
+{
+    return m_isDbThrOpened;
+}
+
+void DBst::setIsDbThrOpened(const bool &value)
+{
+    qDebug() << "setIsDbThrOpened: " << value;
+    m_isDbThrOpened = value;
 }
 
 DBst::~DBst()
@@ -49,12 +90,18 @@ QFuture<bool> DBst::open()
         future = QtConcurrent::run(&m_pool, [this]() {
             qDebug() << m_dbType << m_connName << m_dbName;
             auto m_db = QSqlDatabase::addDatabase(m_dbType, m_connName);
-            m_db.setDatabaseName(m_dbName);
+            m_db.setDatabaseName(m_dbName);            
+            m_db.setConnectOptions("QSQLITE_OPEN_URI;QSQLITE_BUSY_TIMEOUT=5000;QSQLITE_ENABLE_SHARED_CACHE;SQLITE_OPEN_MEMORY");
+            bool res {false};
             if (m_db.open()) {
+                res = true;
                 qDebug() << "DB thread opened: " << QThread::currentThreadId();
+                emit changeIsDbOpened(res);
                 return true;
             } else {
+                res = false;
                 qDebug() << "Open db error: " << m_db.lastError().text();
+                emit changeIsDbOpened(res);
                 return false;
             }
         });
@@ -67,18 +114,53 @@ QFuture<bool> DBst::open()
     return future;
 }
 
+QFuture<bool> DBst::close()
+{
+    return QtConcurrent::run(&m_pool, [this]() {        
+        QSqlDatabase::database(m_connName).close();        
+
+        return true;
+    });
+}
+
+void DBst::closeInstance()
+{
+    QMutexLocker locker(&m_mutex);
+    delete m_instance;
+    m_instance = nullptr;
+}
+
 QFuture<bool> DBst::execAndCheck(QSqlQuery &query)
 {
-    return QtConcurrent::run(&m_pool, [query]() {
-        QSqlQuery newQ(query);
-        return newQ.exec();
+    return QtConcurrent::run(&m_pool, [this, query]() {
+        if (!QSqlDatabase::database(m_connName).isOpen()) {
+            qDebug() << "db is closed";
+            QSqlDatabase::database(m_connName).open();
+        }
+        QSqlQuery newQ(QSqlDatabase::database(m_connName));        
+        newQ = query;
+
+        qDebug() << "Dbst: execAndCheck 3";
+        try {
+            if (newQ.exec())
+                return true;
+            else {
+                qDebug() << "execAndCheck error: " << newQ.lastError();
+                return false;
+            }
+        }  catch (...) {
+            qDebug() << "execAndCheck error: " << newQ.lastError();
+        }
+        return false;
     });
 }
 
 QFuture<QSqlQuery> DBst::execAndGetQuery(QSqlQuery &query)
 {
-    return QtConcurrent::run(&m_pool, [query]() {
-        QSqlQuery newQ(query);
+    return QtConcurrent::run(&m_pool, [this, query]() {
+        QSqlQuery newQ(QSqlDatabase::database(m_connName));
+//        newQ = QSqlQuery((QSqlDatabase::database(m_connName)));
+        newQ = query;        
         newQ.exec();
         return newQ;
     });
@@ -86,8 +168,61 @@ QFuture<QSqlQuery> DBst::execAndGetQuery(QSqlQuery &query)
 
 const QSqlDatabase &DBst::db()
 {
-    m_db = QSqlDatabase::database(m_connName);
-    return m_db;
+    m_db1 = QSqlDatabase::database(m_connName);
+    return m_db1;
+}
+
+const QSqlDatabase &DBst::db_def()
+{
+    return m_dbDef;
+}
+
+QFuture<bool> DBst::commitDB()
+{
+    m_isTransStarted = false;
+    return QtConcurrent::run(&m_pool, [this]() {
+//        return QSqlDatabase::database(m_connName).commit();
+        return QSqlDatabase::database(m_connName).driver()->commitTransaction();
+    });
+}
+
+QFuture<bool> DBst::startTransDB()
+{
+    if (m_isTransStarted) {
+        QFuture<bool> res = QtConcurrent::run(&m_pool, []() { return true; });
+        return res;
+    }
+    m_isTransStarted = true;
+    return QtConcurrent::run(&m_pool, [this]() {
+        return QSqlDatabase::database(m_connName).driver()->beginTransaction();
+        //       return QSqlDatabase::database(m_connName).transaction();
+    });
+}
+
+bool DBst::commitDbDef()
+{
+    qDebug() << "DBst::commitDbDef()";
+//    return QSqlDatabase::database(m_connName).driver()->commitTransaction();
+
+//    m_isTransDefStarted = false;
+//    m_isTransStarted = false;
+    return m_dbDef.commit();
+}
+
+bool DBst::startTransDBdef()
+{
+    if (m_isTransStarted || m_isTransDefStarted) {
+        return true;
+    }
+    m_isTransDefStarted = true;
+    m_isTransStarted = true;
+//    QFuture<bool> res = QtConcurrent::run(&m_pool, [this]() {
+//        return QSqlDatabase::database(m_connName).driver()->beginTransaction();
+//    });
+//    return res.result();
+//    return QSqlDatabase::database(m_connName).driver()->beginTransaction();
+
+    return m_dbDef.driver()->beginTransaction();
 }
 
 void DBst::setPoolThreadIsRunning()
@@ -107,6 +242,7 @@ void DBst::initDbSets()
     qDebug() << "DBst() " << QThread::currentThreadId();
     QFile dbFile;
     QString fileName;
+    connect(this, SIGNAL(changeIsDbOpened(bool)), this, SLOT(setIsDbThrOpened(bool)));
 #ifdef QT_DEBUG
     fileName = "d:/Projects/qt/TVmish/db/TVDB.db3";
 #else
@@ -130,6 +266,8 @@ void DBst::initDbSets()
 
     m_pool.start(m_pThrd);
 
+    initDefDb();
+
     qDebug() << "DBst() m_pool started " << QTime::currentTime();
 //    m_db = QSqlDatabase::addDatabase(m_dbType, m_connName);
 //    m_db.setDatabaseName(m_dbName);
@@ -138,6 +276,20 @@ void DBst::initDbSets()
 //    } else {
 //        qDebug() << "Open db error: " << m_db.lastError().text();
     //    }
+}
+
+void DBst::initDefDb()
+{
+    m_mainThrConnName = "default_connection";
+    m_dbDef = QSqlDatabase::addDatabase(m_dbType, m_mainThrConnName);
+    m_dbDef.setDatabaseName(m_dbName);    
+    qDebug() << "hasTrans: " << m_dbDef.driver()->hasFeature(QSqlDriver::Transactions);
+    m_dbDef.setConnectOptions("QSQLITE_OPEN_URI;QSQLITE_BUSY_TIMEOUT=5000;QSQLITE_ENABLE_SHARED_CACHE;SQLITE_OPEN_MEMORY");
+    if (m_dbDef.open()) {                
+        qDebug() << "DBdef opened: " << QThread::currentThreadId() << " trans: " << m_dbDef.transaction();
+    } else {
+        qDebug() << "Open dbdef error: " << m_dbDef.lastError().text();
+    }
 }
 
 bool DBst::checkIsRunningThreadPool()

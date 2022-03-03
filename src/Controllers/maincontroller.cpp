@@ -9,20 +9,20 @@
 #include "Classes/playlists.h"
 #include "Classes/plfiles.h"
 
-MainController::MainController(QSqlDatabase db) : m_db(db)
-{
-
-}
-
-//MainController::MainController()
+//MainController::MainController(QSqlDatabase db) : m_db(db)
 //{
 
 //}
 
-MainController::MainController(DataBase &datab) : m_datB(datab)
-{    
-    m_dataB = std::make_shared< DataBase > (datab);
+MainController::MainController()
+{
+
 }
+
+//MainController::MainController(DataBase &datab) : m_datB(datab)
+//{
+//    m_dataB = std::make_shared< DataBase > (datab);
+//}
 
 MainController::~MainController()
 {
@@ -90,6 +90,7 @@ void MainController::openPlaylistManager()
 //    plContr = new PlaylistController(&engine, m_db);
 //    plContr = PlaylistController(engine, *m_dataB);
 //    plContr = PlaylistController(new PlaylistController(engine, *m_dataB));
+    plContr.disconnectAllConnections();
     plContr.openPlaylistManager();
 }
 

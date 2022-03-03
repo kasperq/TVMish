@@ -6,15 +6,15 @@
 #include <QGuiApplication>
 
 #include "playlistcontroller.h"
-#include "DB/database.h"
+//#include "DB/database.h"
 
 class MainController : public QObject
 {
     Q_OBJECT
 public:
-//    MainController();
-    MainController(DataBase &datab);
-    MainController(QSqlDatabase db);
+    MainController();
+//    MainController(DataBase &datab);
+//    MainController(QSqlDatabase db);
     MainController& operator=(MainController &orig);
     virtual ~MainController();
 
@@ -34,11 +34,12 @@ public slots:
 private:
     QQmlApplicationEngine engine;
 
-    QSqlDatabase m_db;
-    std::shared_ptr< DataBase > m_dataB;
-    DataBase m_datB;
+//    QSqlDatabase m_db;
+//    std::shared_ptr< DataBase > m_dataB;
+//    DataBase m_datB;
 //    PlaylistController plContr {engine, *m_dataB};
-    PlaylistController plContr {engine, m_datB};
+//    PlaylistController plContr {engine, m_datB};
+    PlaylistController plContr {engine};
 };
 
 #endif // MAINCONTROLLER_H

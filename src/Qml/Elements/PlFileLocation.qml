@@ -11,21 +11,29 @@ import Playlists 1.0
 
 Dialog {
     id: _dlgLocationForm
-    height: 127
+//    height: 127
     width: 200
     modal: true
 
     property int _btn_height: 30
-    property string file_path: plFiles.getClipboardString()
+    property string file_path: {
+        if (plFiles) {
+            plFiles.getClipboardString()
+        } else {
+            ""
+        }
+    }
     property url fileUrl
 
     signal okClicked
     signal cancelClicked
     signal localFileSelected
     signal buferUrlSelected
+    signal urlFileSelected
 
     onAccepted: console.log("Ok clicked")
     onRejected: console.log("Cancel clicked")
+
 
 //    Elements.ErrorDialog {
 //        id: dlg_error
@@ -54,7 +62,8 @@ Dialog {
                 id: rect_buffText
                 clip: true
                 Layout.fillWidth: true
-                Layout.maximumHeight: 150
+                Layout.fillHeight: true
+//                Layout.maximumHeight: 150
                 Layout.minimumHeight:  50
                 Text {
                     id: lbl_buffer
@@ -62,6 +71,8 @@ Dialog {
                     textFormat: Text.RichText
                     verticalAlignment: Text.AlignTop
                     horizontalAlignment: Text.AlignLeft
+                    Layout.fillHeight: true
+//                    height: contentHeight
                     elide: Text.ElideLeft
                     wrapMode: Text.Wrap
                     z: 1
@@ -92,7 +103,7 @@ Dialog {
             ColumnLayout {
                 id: panel_fileAction
                 Layout.fillWidth: true
-                Layout.fillHeight: true
+//                Layout.fillHeight: true
                 spacing: 1
                 Elements.ToolBtn {
                     id: btn_fromLocal
@@ -120,8 +131,27 @@ Dialog {
                     ico_path: ""
                     onClicked: {
                         file_path = plFiles.getClipboardString();
+                        fileUrl = file_path;
                         console.log("clipboard: " + file_path);
                         okBtn.clicked();
+                        buferUrlSelected();
+                    }
+                }
+                Elements.ToolBtn {
+                    id: btn_fromUrl
+                    z: 9
+                    opacity: 1
+                    Layout.fillWidth: true
+                    btn_height: _btn_height
+                    btn_width: panel_fileAction.width
+                    btn_text: qsTr("From URL")
+                    ico_path: ""
+                    onClicked: {
+                        file_path = plFiles.getClipboardString();
+                        fileUrl = file_path;
+                        console.log("clipboard: " + file_path);
+                        okBtn.clicked();
+                        urlFileSelected();
                     }
                 }
                 Rectangle {

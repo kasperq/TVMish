@@ -25,7 +25,7 @@ public slots:
 
 private:
     std::shared_ptr< DataBase > m_db;
-    PlaylistGW m_plGw {this, m_db->db()};
+    PlaylistGW m_plGw {this/*, m_db->db()*/};
 
     void run() override;
 };
