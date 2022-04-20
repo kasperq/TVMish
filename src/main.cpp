@@ -21,8 +21,9 @@ int main(int argc, char *argv[])
 #else
     QString extraImportPath(QStringLiteral("%1/../../../%2"));
 #endif
+    QString appPath = app.applicationDirPath();
 
-    TVmish* tv = new TVmish(nullptr, &app);
+    TVmish* tv = new TVmish(appPath, &app);
     if (tv->startApp()){
         return app.exec();
     }

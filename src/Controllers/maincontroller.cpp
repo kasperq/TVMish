@@ -1,9 +1,21 @@
 #include <QtQml/QQmlEngine>
+#include <QQmlContext>
 
 
 #include "maincontroller.h"
 
-MainController::MainController(QObject *parent, QGuiApplication *app) : QObject(parent), m_app(app)
+#include "Models/playlistsmodel.h"
+#include "Models/plfilemodel.h"
+#include "Models/channelsmodel.h"
+#include "Models/categorymodel.h"
+
+#include "Classes/playlists.h"
+#include "Classes/plfiles.h"
+#include "Classes/channels.h"
+#include "Classes/categories.h"
+#include "Classes/videoplayer.h"
+
+MainController::MainController()
 {
 
 }
@@ -15,29 +27,59 @@ MainController::~MainController()
 
 void MainController::loadMainForm()
 {
-    engine.load(QUrl(QStringLiteral("qrc:/Forms/MainForm.qml")));
+    openTvMode();
+
+    qmlRegisterType<PlaylistsModel>("Playlists", 1, 0, "PlaylistsModel");
+    qmlRegisterUncreatableType<Playlists>("Playlists", 1, 0, "Playlists",
+                                          QStringLiteral("Playlists shouldn't be created in QML"));
+
+    qmlRegisterType<PlFilesModel>("Playlists", 1, 0, "PlFilesModel");
+    qmlRegisterUncreatableType<PlFiles>("Playlists", 1, 0, "PlFiles",
+                                          QStringLiteral("PlFiles shouldn't be created in QML"));
+
+    qmlRegisterType<ChannelsModel>("Playlists", 1, 0, "ChannelsModel");
+    qmlRegisterUncreatableType<Channels>("Playlists", 1, 0, "Channels",
+                                          QStringLiteral("Channels shouldn't be created in QML"));
+
+    qmlRegisterType<CategoryModel>("Playlists", 1, 0, "CategoryModel");
+    qmlRegisterUncreatableType<Categories>("Playlists", 1, 0, "Categories",
+                                          QStringLiteral("Categoriess shouldn't be created in QML"));
+
+    qmlRegisterUncreatableType<VideoPlayer>("Playlists", 1, 0, "_videoPlayer",
+                                            QStringLiteral("VideoPlayer shouldn't be created in QML"));
+
+    engine.load(QUrl(QStringLiteral("qrc:/Qml/MainForm.qml")));
     if (engine.rootObjects().isEmpty())
         qDebug() << "exit";
 
-//    const QUrl url(QStringLiteral("qrc:/Forms/MainForm.qml"));
-//    QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
-//                     m_app, [url](QObject *obj, const QUrl &objUrl) {
-//        if (!obj && url == objUrl) {
-//            qDebug() << "exit app";
-//            QCoreApplication::exit(-1);
-//        }
-//        }, Qt::QueuedConnection);
-//    engine.load(url);
+    engine.rootContext()->setContextProperty(QStringLiteral("mainContr"), this);
+}
 
-    //    viewer = new QQuickView();
-////    connect(viewer->engine(), &QQmlEngine::quit, &viewer, &QWindow::close);
-//    viewer->setTitle(QStringLiteral("TVmish"));
+void MainController::openTvMode()
+{    
+    m_tvContr.disconnectAllConnections();
+    m_tvContr.setSets(m_sets);
+    m_tvContr.openTVMode();           
+}
 
-////    viewer->rootContext()->setContextProperty("dataSource", &dataSource);
-////    viewer->rootContext()->setContextProperty("openGLSupported", openGLSupported);
+void MainController::openOptions()
+{
 
-//    viewer->setSource(QUrl("qrc:/Forms/MainForm.qml"));
-//    viewer->setResizeMode(QQuickView::SizeRootObjectToView);
-////    viewer->setColor(QColor("#404040"));
-//    viewer->show();
+}
+
+void MainController::openPlaylistManager()
+{
+    m_plContr.disconnectAllConnections();
+    m_plContr.setSets(m_sets);
+    m_plContr.openPlaylistManager();
+}
+
+void MainController::openTvSchedule()
+{
+
+}
+
+void MainController::openPlaylistChooser()
+{
+
 }

@@ -3,32 +3,39 @@
 
 #include <QObject>
 
-#include "DB/database.h"
 #include "Controllers/maincontroller.h"
+#include "settings.h"
 
-#include <QGuiApplication>
+#include "DB/dbst.h"
+
+
+//#include <QGuiApplication>
 
 class TVmish : public QObject
 {
     Q_OBJECT
 public:
-    explicit TVmish(QObject *parent = nullptr, QGuiApplication *app = nullptr);
-//    TVMish(QGuiApplication app);
+    TVmish(QString &appPath, QObject *parent);
     virtual ~TVmish();
-
-//    QString appPath;
 
     bool startApp();
 
 signals:
+    void readyForLoadApp();
+
+public slots:
+    void loadApp();
 
 private:
-    DataBase *db;
-    MainController *mainContr;
+    QSqlDatabase m_db;
+    QSqlQuery query;
+
+    MainController m_mainContr;
+    Settings m_sets;
+
     std::string m_url;
     std::string m_dbName;
-    QGuiApplication *m_app;
-
+    QString m_appPath;
 };
 
 #endif // TVMISH_H
