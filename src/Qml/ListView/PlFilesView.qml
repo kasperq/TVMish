@@ -5,6 +5,7 @@ import QtQuick.Controls.Material 2.12
 import QtQuick.Controls.Universal 2.12
 
 import "../Elements" as Elements
+import "../functions.js" as Funcs
 import Playlists 1.0
 
 ColumnLayout {
@@ -42,20 +43,19 @@ ColumnLayout {
             onOkClicked: {
                 console.log("okClicked");
                 plFiles.appendNewItem();
-//                plFiles.addItemFromLocalFile(plFilesView.currentIndex, _fileLocation.fileUrl);
-//                plFiles.setFilePath(plFilesView.currentIndex, _fileLocation.file_path);
+                enableBtns(false);
             }
             onLocalFileSelected: {
-                console.log("onLocalFileselect: " + plFilesView.currentIndex);
-                plFiles.addItemFromLocalFile(plFilesView.currentIndex, _fileLocation.fileUrl);
+                console.log("onLocalFileselect: " + _listView_files.currentIndex);
+                plFiles.addItemFromLocalFile(_listView_files.currentIndex, _fileLocation.fileUrl);
             }
             onBuferUrlSelected: {
-                console.log("onBuferUrlSelect: " + plFilesView.currentIndex);
-                plFiles.addItemFromBuffer(plFilesView.currentIndex, _fileLocation.fileUrl);
+                console.log("onBuferUrlSelect: " + _listView_files.currentIndex);
+                plFiles.addItemFromBuffer(_listView_files.currentIndex, _fileLocation.fileUrl);
             }
             onUrlFileSelected: {
-                console.log("onUrlFileSelected: " + plFilesView.currentIndex);
-                plFiles.addItemFromUrl(plFilesView.currentIndex, _fileLocation.fileUrl);
+                console.log("onUrlFileSelected: " + _listView_files.currentIndex);
+                plFiles.addItemFromUrl(_listView_files.currentIndex, _fileLocation.fileUrl);
             }
 
             onCancelClicked: {
@@ -72,7 +72,7 @@ ColumnLayout {
             //        }
         }
         Elements.SureDialog {
-            id: dlg_delete
+            id: _dlg_delete
             width: 350
             height: 80
             anchors.centerIn: Overlay.overlay
@@ -81,7 +81,8 @@ ColumnLayout {
             okBtnText: qsTr("Yes")
             cancelBtnText: qsTr("No")
             onOkClicked: {
-                plFiles.removeCurrentItem(plFilesView.currentIndex);
+                plFiles.removeCurrentItem(_listView_files.currentIndex);
+                plFiles.scroll(_listView_files.currentIndex);
             }
         }
         Elements.SureDialog {
@@ -94,17 +95,19 @@ ColumnLayout {
             okBtnText: qsTr("Yes")
             cancelBtnText: qsTr("No")
             onOkClicked: {
+                enableBtns(false);
                 channels.update(newFilePath);
             }
         }
 
         RowLayout {
+            id: _rlay_toobar
             anchors.fill: parent
             spacing: 1
             opacity: 1
             z: 10
             Elements.ToolBtn {
-                id: allChannelsBtn
+                id: _btn_selectAllFiles
                 z: 9
                 opacity: 1
                 Layout.fillHeight: true
@@ -115,68 +118,79 @@ ColumnLayout {
                 ico_path: ""
                 showHint: true
                 hintText: qsTr("Show chanels from all files in current playlist")
-//                onClicked: {
-//                    if (allChannelsBtn.checked) {
-//                        allChannelsBtn.checked = false;
-//                    }
-//                }
+                onClicked: {
+                    _listView_files.enabled = !_btn_selectAllFiles.checked;
+                    if (_btn_selectAllFiles.checked)
+                        plFiles.open(_btn_selectAllFiles.checked, 0);
+                    else
+                        plFiles.open(_btn_selectAllFiles.checked, plFiles.idFile);
+                }
             }
             Elements.ToolBtn {
-                id: addBtn
+                id: _btn_add
                 z: 10
                 opacity: 1
                 Layout.fillHeight: true
+                Layout.minimumWidth: files_toolbar.height
+                Layout.maximumWidth: files_toolbar.height
                 btn_height: files_toolbar.height
+                enabled: !_btn_selectAllFiles.checked
                 btn_width: 20
-                btn_text: qsTr("+")
-                ico_path: ""
+                btn_text: qsTr("")
+                hintText: qsTr("Add playlist file")
+                ico_path: "../Ico/add.png"
                 onClicked: {
-//                    console.log("addBtn: " + plFilesView.currentIndex);
-//                    console.log("changed target: " + allChannelsBtn.checked);
-                    if (allChannelsBtn.checked) {
-                        allChannelsBtn.checked = false;
+                    if (_btn_selectAllFiles.checked) {
+                        _btn_selectAllFiles.checked = false;
                     }
                     _fileLocation.file_path = plFiles.getClipboardString();
                     _fileLocation.open();
-//                    plFiles.addItem();
                 }
             }
             Elements.ToolBtn {
-                id: delBtn
+                id: _btn_delete
                 z: 9
                 opacity: 1
                 Layout.fillHeight: true
+                Layout.minimumWidth: files_toolbar.height
+                Layout.maximumWidth: files_toolbar.height
+                enabled: !_btn_selectAllFiles.checked
                 btn_height: files_toolbar.height
                 btn_width: 20
-                btn_text: qsTr("-")
-                ico_path: ""
+                btn_text: qsTr("")
+                ico_path: "../Ico/delete.png"
+                hintText: qsTr("Remove playlist file with channels")
                 onClicked: {
-                    if (plFilesView.currentIndex == -1) {
+                    if (_listView_files.currentIndex == -1) {
                         dlg_error.errorText = qsTr("Choose file!");
                         dlg_error.open();
                     } else {
-                        if (allChannelsBtn.checked) {
-                            allChannelsBtn.checked = false;
+                        if (_btn_selectAllFiles.checked) {
+                            _btn_selectAllFiles.checked = false;
                         }
-                        dlg_delete.open();
-                        //                    plFiles.removeCurrentItem(plFilesView.currentIndex);
+                        _dlg_delete.focus = true;
+                        _dlg_delete.open();                        
                     }
                 }
             }
             Elements.ToolBtn {
-                id: refreshBtn
+                id: _btn_refresh
                 z: 9
                 opacity: 1
                 Layout.fillHeight: true
+                Layout.minimumWidth: files_toolbar.height
+                Layout.maximumWidth: files_toolbar.height
                 btn_height: files_toolbar.height
+                enabled: !_btn_selectAllFiles.checked
                 btn_width: 40
-                btn_text: qsTr("refr.")
-                ico_path: ""
+                btn_text: qsTr("")
+                hintText: qsTr("Refresh current playlist file")
+                ico_path: "../Ico/refresh.png"
                 onClicked: {
-                    if (allChannelsBtn.checked) {
-                        allChannelsBtn.checked = false;
+                    if (_btn_selectAllFiles.checked) {
+                        _btn_selectAllFiles.checked = false;
                     }
-                    plFiles.refresh(plFilesView.currentIndex);
+                    plFiles.refresh(_listView_files.currentIndex);
 //                    plFiles.update(plFilesView.currentIndex);
                 }
             }
@@ -189,15 +203,9 @@ ColumnLayout {
 
 
     ListView {
-        id: plFilesView
+        id: _listView_files
         clip: true
         Layout.fillWidth: true
-//        Layout.minimumHeight: {
-//            if (plFiles.rowCount === 0)
-//                plFiles.rowCount * 20;
-//            else
-//                plFiles.rowCount * (lbl_cursor.height + 1) + 50;
-//        }
         Layout.fillHeight: true
         keyNavigationEnabled: true
         headerPositioning: ListView.OverlayHeader
@@ -205,15 +213,10 @@ ColumnLayout {
         ScrollBar.vertical: ScrollBar {}
 
         onCurrentIndexChanged: {
-//            console.log("PlFilesView: currentFilesIndex1: " + plFilesView.currentIndex);
-            indexChanged(plFilesView.currentIndex);
-            plFilesView.model.list = plFiles;
-            plFiles.scroll(plFilesView.currentIndex);
+            indexChanged(_listView_files.currentIndex);
+            _listView_files.model.list = plFiles;
+            plFiles.scroll(_listView_files.currentIndex);
         }
-//        Component.onCompleted: {
-//            console.log("onCompleted");
-////            plFilesView.model.list = plFiles;
-//        }
 
         model: PlFilesModel  {
             list: plFiles            
@@ -222,7 +225,7 @@ ColumnLayout {
         header: Rectangle {
             id: head
             height: 20
-            width: ListView.view.width
+            width: _listView_files.width
             radius: 2
             border.color: "darkgray"
             color: "gray"
@@ -269,31 +272,7 @@ ColumnLayout {
             anchors.topMargin: 2
             anchors.leftMargin: 3
             z: 1
-            clip: false
-
-            function setColor(curControl, curIndex) {
-                if (curControl.hovered) {
-                    if (curControl.activeFocus) {
-                        return "lightgray";
-                    } else {
-                        if (curControl.enabled) {
-                            return color_hoverAndEnabled;
-                        } else {
-                            return color_hoverAndDisabled;
-                        }
-                    }
-                } else {
-                    if (curControl.activeFocus) {
-                        return "lightgray";
-                    } else {
-                        if (curIndex === plFilesView.currentIndex) {
-                            return color_notHoverAndCurInd;
-                        } else {
-                            return color_notHoverAndNotCurInd;
-                        }
-                    }
-                }
-            }
+            clip: false           
 
             RowLayout {
                 Layout.fillWidth: true
@@ -302,171 +281,71 @@ ColumnLayout {
                 spacing: 1
                 focus: true
 
-                TextField {
-                    id: lbl_cursor
-                    text: plFilesView.currentIndex == index ? ">" : "  "
-                    color: "powderblue"
-                    hoverEnabled: true
+                Elements.MyTextEdit {
+                    id: _lbl_cursor
+                    text: _listView_files.currentIndex === index ? ">" : "  "
+                    is_editable: false
+                    back_color: Funcs.setColor(_lbl_cursor, index, _listView_files.currentIndex)
+                    border_color: Funcs.setBorderColor(_lbl_cursor.activeFocus);
+                    onPressed: _listView_files.currentIndex = index
+                    edit_color: "powderblue"
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+                    font.pixelSize: 16
+                    font.bold: true
+
                     Layout.fillHeight: true
                     Layout.minimumWidth: width_cursor
                     Layout.maximumWidth: width_cursor
                     Layout.topMargin: 1
-                    readOnly: true
-                    wrapMode: Text.WordWrap
-                    verticalAlignment: Text.AlignVCenter
-                    horizontalAlignment: Text.AlignHCenter
-                    selectByMouse: true
-                    font.pixelSize: 16
-                    font.bold: true
-                    KeyNavigation.down: bottom
-                    KeyNavigation.up: top
-
-                    background: Rectangle {
-                        id: back_cur
-                        anchors.fill: parent
-                        radius: 2
-                        color: setColor(lbl_cursor, index)
-                    }
-
-                    MouseArea {
-                        hoverEnabled: true
-                        anchors.fill: parent
-                        onClicked: {
-                            plFilesView.currentIndex = index
-                        }
-                    }
                 }
-
-                TextField {
-                    id: edit_naim
-                    Layout.fillWidth: true
-                    Layout.topMargin: 1
-                    Layout.fillHeight: true
-                    hoverEnabled: true
-                    KeyNavigation.down: bottom
-                    KeyNavigation.up: top
-                    placeholderText: qsTr("Enter file name")
+                Elements.MyTextEdit {
+                    id: _edit_naim
                     text: model.file_name
-                    wrapMode: TextEdit.Wrap
-                    mouseSelectionMode: TextEdit.SelectCharacters
-                    selectByMouse: true
-                    focus: true
-                    readOnly: false
-                    Keys.onPressed: (event) => {
-                                        if (event.key === Qt.Key_Return
-                                            || event.key === Qt.Key_Escape
-                                            || event.key === Qt.Key_Down
-                                            || event.key === Qt.Key_Up) {
-                                            edit_naim.editingFinished();
-                                            event.accepted = true;
-                                        }
-                                    }
+                    placeholderText: qsTr("Enter file name")
+                    is_editable: true
+                    back_color: Funcs.setColor(_edit_naim, index, _listView_files.currentIndex)
+                    border_color: Funcs.setBorderColor(_edit_naim.activeFocus);
+                    onEditingFinished: { _edit_naim.focus = false; model.file_name = _edit_naim.text; }
+                    onPressed: _listView_files.currentIndex = index
 
-                    onEditingFinished: {
-                        focus = false
-                        model.file_name = text
-                    }
-                    onPressed: {
-                        plFilesView.currentIndex = index;
-                    }
-                    background: Rectangle {
-                        id: back_naim
-                        anchors.fill: parent
-                        radius: 2
-                        color: setColor(edit_naim, index)
-                        border.color: {
-                            if (edit_naim.activeFocus) {
-                                "skyblue";
-                            } else {
-                                "transparent";
-                            }
-                        }
-                    }
-//                    Component.onCompleted: console.log("plfilesview: " + model.file_name)
+                    Layout.minimumWidth: width_fileName
+                    Layout.maximumWidth: width_fileName
+                    Layout.fillHeight: true
+                    Layout.topMargin: 1
                 }
-                TextField {
-                    id: edit_url
+                Elements.MyTextEdit {
+                    id: _edit_url
+                    text: model.file_path
+                    placeholderText: qsTr("Enter url to file playlist")
+                    is_editable: true
+                    font.pixelSize: 10
+                    font.bold: false
+                    padding: 1
+                    back_color: Funcs.setColor(_edit_url, index, _listView_files.currentIndex)
+                    border_color: Funcs.setBorderColor(_edit_naim.activeFocus);
+                    onEditingFinished: { _edit_url.focus = false; model.file_path = _edit_url.text; }
+                    onPressed: _listView_files.currentIndex = index
+
                     Layout.fillWidth: true
                     Layout.topMargin: 1
                     Layout.fillHeight: true
-                    hoverEnabled: true
-                    KeyNavigation.down: bottom
-                    KeyNavigation.up: top
-                    placeholderText: qsTr("Enter url to file playlist")
-                    text: model.file_path
-                    wrapMode: TextEdit.Wrap
-                    mouseSelectionMode: TextEdit.SelectCharacters
-                    selectByMouse: true
-                    focus: true
-                    readOnly: false
-                    Keys.onPressed: (event) => {
-                                        if (event.key === Qt.Key_Return
-                                            || event.key === Qt.Key_Escape
-                                            || event.key === Qt.Key_Down
-                                            || event.key === Qt.Key_Up) {
-                                            edit_url.editingFinished();
-                                            event.accepted = true;
-                                        }
-                                    }
-
-                    onEditingFinished: {
-                        focus = false
-                        model.file_path = text
-                    }
-                    onPressed: {
-                        plFilesView.currentIndex = index;
-                    }
-                    background: Rectangle {
-                        id: back_url
-                        anchors.fill: parent
-                        radius: 2
-                        color: setColor(edit_url, index)
-                        border.color: {
-                            if (edit_url.activeFocus) {
-                                "skyblue";
-                            } else {
-                                "transparent";
-                            }
-                        }
-                    }
                 }
-                CheckBox {
-                    id: cb_isAvailable
+                Elements.MyCheckBox {
+                    id: _cb_isAvailable
                     Layout.fillHeight: true
                     Layout.minimumWidth: width_isAvailable
                     Layout.maximumWidth: width_isAvailable
+                    cb_height: width_isAvailable
+                    cb_width: width_isAvailable
                     Layout.topMargin: 1
                     checked: model.is_available
+                    index: index
+                    currentIndex: _listView_files.currentIndex
 
                     onClicked: {
                         model.is_available = checked;
-                        plFilesView.currentIndex = index;
-                    }
-
-                    indicator: Rectangle {
-                        id: indicator_out
-                        implicitWidth: width_isAvailable / 2
-                        implicitHeight: width_isAvailable / 2
-                        anchors.centerIn: cb_isAvailable
-                        radius: 15
-                        border.color: cb_isAvailable.down ? "lightgray" : "dimgray"
-                        border.width: 2
-
-                        Rectangle {
-                            width: indicator_out.width - 4 - indicator_out.border.width
-                            height: indicator_out.height - 4 - indicator_out.border.width
-                            anchors.horizontalCenter: indicator_out.horizontalCenter
-                            anchors.verticalCenter: indicator_out.verticalCenter
-                            radius: 15
-                            color: cb_isAvailable.down ? "lightgray" : "dimgray"
-                            visible: cb_isAvailable.checked
-                        }
-                    }
-                    background: Rectangle {
-                        id: back_cbIsAvailable
-                        anchors.fill: cb_isAvailable
-                        radius: 2
-                        color: setColor(cb_isAvailable, index)
+                        _listView_files.currentIndex = index;
                     }
                 }
 
@@ -474,8 +353,7 @@ ColumnLayout {
                     hoverEnabled: true
                     Layout.fillWidth: true
                     onClicked: {
-//                        console.log("mouseclick 2");
-                        plFilesView.currentIndex = index
+                        _listView_files.currentIndex = index
                     }
                 }
             }
@@ -484,34 +362,52 @@ ColumnLayout {
             target: plFiles
             function onSelectItem(index) {
 //                console.log("PlFilesView: onSelectItem");
-                if (plFilesView.currentIndex !== index)
-                    plFilesView.currentIndex = index;
+                if (_listView_files.currentIndex !== index)
+                    _listView_files.currentIndex = index;
             }
             function onItemChanged(index) {
 //                console.log("PlFilesView: item changed");
-                plFilesView.model.list = plFiles;
+                _listView_files.model.list = plFiles;
             }
             function onRowCountChanged(rows) {
 //                console.log("PlFilesView: row count changed: " + rows);
-                plFilesView.model.list = plFiles;
-                rowsNum = plFiles.rowCount;
+                _listView_files.model.list = plFiles;
+                rowsNum = plFiles.rowCount;                
+                if (_btn_selectAllFiles.checked)
+                    _btn_selectAllFiles.clicked();
             }
             function onErrorEmited(errorMsg) {
                 console.log(errorMsg);
-                dlg_error.errorText = errorMsg;
+                dlg_error.errorText = errorMsg;                
                 dlg_error.open();
             }
             function onListChanged() {
 //                console.log("PlFilesView: list changed");
-                plFilesView.model.list = plFiles;
+                _listView_files.model.list = plFiles;
                 rowsNum = plFiles.rowCount;
             }
             function onFileFullyAdded(filePath) {
                 console.log("file fully added: " + filePath);
+
+                enableBtns(true);
+
                 newFilePath = filePath;
+                dlg_addChannels.focus = true;
                 dlg_addChannels.open();
             }
         }
+        Connections {
+            target: channels
+            function onChannelsAdded(result) {
+                console.log("channels added: " + result);
+                enableBtns(true);
+            }
+        }
+    }
+    function enableBtns(isEnabled) {
+        _btn_add.enabled = isEnabled;
+        _btn_delete.enabled = isEnabled;
+        _btn_refresh.enabled = isEnabled;
     }
 
 }

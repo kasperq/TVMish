@@ -24,8 +24,7 @@ Dialog {
     signal cancelClicked
 
     onAccepted: console.log("Ok clicked")
-    onRejected: console.log("Cancel clicked")
-
+    onRejected: console.log("Cancel clicked")        
 
 
     contentItem: Rectangle {
@@ -35,6 +34,23 @@ Dialog {
         border.color: "dimgray"
         color: "#424949"
         z: 10
+
+        Keys.onPressed: (event) => {
+                            if (event.key === Qt.Key_Left) {
+                                if (!okBtn.isFocused) {
+                                    okBtn.isFocused = true;
+                                    cancelBtn.isFocused = false;
+                                }
+                                event.accepted = true;
+                            }
+                            if (event.key === Qt.Key_Right) {
+                                if (!cancelBtn.isFocused) {
+                                    okBtn.isFocused = false;
+                                    cancelBtn.isFocused = true;
+                                }
+                                event.accepted = true;
+                            }
+                        }
 
         ColumnLayout {
             anchors.fill: parent
@@ -90,6 +106,7 @@ Dialog {
                     btn_text: okBtnText
                     ico_path: ""
                     onClicked: _dlgQuestionForm.okClicked()
+                    isFocused: true
                 }
                 Elements.ToolBtn {
                     id: cancelBtn
@@ -101,6 +118,7 @@ Dialog {
                     btn_width: panel_toolbar.width
                     btn_text: cancelBtnText
                     ico_path: ""
+                    isFocused: false
                     onClicked: _dlgQuestionForm.cancelClicked()
                 }
             }
@@ -117,6 +135,6 @@ Dialog {
             console.log("func okClicked");
             _dlgQuestionForm.accepted();
             _dlgQuestionForm.close();
-        }
+        }        
     }
 }

@@ -15,36 +15,40 @@
 
 #include "Gateways/channelgw.h"
 #include "Classes/channels.h"
+#include "Gateways/logosgw.h"
+#include "Classes/categories.h"
+#include "Gateways/categorygw.h"
 
 #include "Classes/settings.h"
 
-//#include "DB/database.h"
 
 class PlaylistController : public QObject
 {
     Q_OBJECT
 public:
     PlaylistController(QQmlApplicationEngine &engine);
-//    PlaylistController(QQmlApplicationEngine &engine, DataBase &db);
-//    PlaylistController();
-//    PlaylistController& operator=(PlaylistController &orig);
     virtual ~PlaylistController();
 
     void disconnectAllConnections();
     void openPlaylistManager();
+    void openPlaylistViewer();
+
+    void setSets(const Settings &value);
 
 signals:
     void filesAdded(const int &idPlaylist);
     void channelsAdded(const int &idPlaylist, const int &idFile);
+    void categoriesAdded();
 
 public slots:
-    void addItemsFromDbToPlaylists();
+    void addItemsFromDbToPlaylists(const int &idPlaylist);
     void addItemsFromDbToFiles();
-    void addItemsFromDbToChannels();
+    void addItemsFromDbToChannels(const int &idPlaylist, const int &idFile);
+    void addItemsFromDbToCategories();
 
 private:
     QQmlApplicationEngine *m_engine;
-//    std::shared_ptr< DataBase > m_db;
+
     std::shared_ptr< Settings > m_sets;
 
     PlaylistGW m_plGw {this};
@@ -55,15 +59,23 @@ private:
 
     ChannelGW m_channelGW;
     Channels m_channels;
+    LogosGW m_logosGW;
+    CategoryGW m_categoryGW;
+    Categories m_categories;
+
+    int m_curIdPlaylist {};
 
     void initPlaylistConnections();
-    void openPlaylists();
+    void openPlaylists(const bool &isCurrent);
 
     void initFilesConnections();
     void openFiles();
 
     void initChannelsConnections();
     void openChannels();
+
+    void initCategoryConnections();
+    void openCategories();
 };
 
 #endif // PLAYLISTCONTROLLER_H

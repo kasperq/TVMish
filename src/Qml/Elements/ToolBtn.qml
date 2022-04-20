@@ -16,33 +16,42 @@ ToolButton {
     property string ico_path
     property string hintText
     property bool showHint: false
+    property bool isFocused: false
 
     signal clicked
 
     highlighted: true
-    Layout.maximumHeight: btn_height
-    Layout.minimumHeight: btn_height
-    Layout.maximumWidth: ico_path == "" ? btn_width : 40 + btn_width
+
     text: btn_text
     hoverEnabled: true
     state: "NORMAL"
+    opacity: enabled ? 1 : 0.5
 
     contentItem: RowLayout {
         anchors.fill: parent
         spacing: 1
+        Rectangle {
+            id: fillerRectLeft
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+            opacity: 0
+        }
         Image {
             id: backgroundImage
-            Layout.preferredHeight: btn_.btn_height - 5
-            Layout.maximumHeight: btn_.btn_height - 10
-            Layout.maximumWidth: ico_path == "" ? 0 : 30
+
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+
             fillMode: Image.PreserveAspectFit
             source: ico_path
             visible: ico_path == "" ? false : true
+            verticalAlignment: Image.AlignVCenter
+            horizontalAlignment: /*btn_.text === "" ? Image.AlignLeft : */Image.AlignHCenter
         }
         Text {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            wrapMode: Text.Wrap
+            wrapMode: Text.WrapAnywhere
             text: btn_.text
             font: btn_.font
             opacity: enabled ? 1.0 : 0.3
@@ -58,16 +67,26 @@ ToolButton {
 
             visible: btn_.text === "" ? false : true
         }
+        Rectangle {
+            id: fillerRect
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+            opacity: 0
+        }
     }
 
     background: Rectangle {
         id: btn_back
         anchors.fill: parent
         opacity: enabled ? 1 : 0.3
+        focus: isFocused
         radius: 2
+        border.color: btn_back.focus ? "#4682B4" : "dimgray"
+        border.width: btn_back.focus ? 2 : 0
+        color: "dimgray"
     }
     MouseArea {
-        id: mouseRegion
+        id: _mR
         anchors.fill: parent        
 
         onClicked: {
@@ -83,46 +102,16 @@ ToolButton {
             }
             btn_.state = "PRESSED";
         }
+        onHoveredChanged: btn_.state = "HOVERED"
     }
-    function setColor(control) {
-        if (control.down) {
-            btn_back.color = "lightgray";
-        } else {
-            if (control.hovered) {
-                if (control.checked) {
-                    btn_back.color = "#424949";
-                } else {
-                    btn_back.color = "dimgray";
-                }
-            } else {
-                if (control.checked) {
-                    btn_back.color = "darkgray";
-                } else {
-                    btn_back.color = "dimgray";
-                }
-            }
-        }
-    }
-
-    function getColor(control) {
-        if (control.down) {
-            return "lightgray";
-        } else {
-            if (control.hovered) {
-                if (control.pressed) {
-                    return "lightgray";
-                } else {
-                    return "gray";
-                }
-            } else {
-                if (control.checked) {
-                    return "#424949";
-                } else {
-                    return "dimgray";
-                }
-            }
-        }
-    }
+    Keys.onPressed: (event) => {
+                        if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                            if (isFocused) {
+                                btn_.clicked();
+                            }
+                            event.accepted = true;
+                        }
+                    }
 
     states: [
         State {
@@ -137,7 +126,7 @@ ToolButton {
             name: "NORMAL"
             when: btn_.activeFocusChanged
             PropertyChanges {
-                target: btn_back;
+                target: btn_back;                
                 color: btn_.checked ? "#424949" : "dimgray"
             }
         },
@@ -147,12 +136,22 @@ ToolButton {
                 target: btn_back;
                 color: btn_.checked ? "darkgray" : "lightgray"
             }
+        },
+        State {
+            name: "FOCUSED"
+            PropertyChanges {
+                target: btn_back
+                border.color: btn_back.focus ? "yellow" : "#242424"
+                border.width: btn_back.focus ? 4 : 1
+
+            }
         }
+
     ]
 
     ToolTip {
         id: hint
-        parent: btn_
+        parent: btn_ != null ? btn_ : null
         visible: btn_.hovered && showHint
         text: hintText
         delay: 500

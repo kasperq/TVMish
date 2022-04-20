@@ -7,6 +7,7 @@ FileCopyThread::FileCopyThread(QObject *parent) : QThread(parent)
 
 void FileCopyThread::copyFile(QString &oldPath, QString &newPath)
 {
+    qDebug() << "FileCopyThread::copyFile: " << oldPath << " new: " << newPath;
     m_msg = "";
     m_file.setFileName(newPath);
     if (m_file.exists()) {
@@ -56,10 +57,7 @@ void FileCopyThread::extensionChecked(const int &index, QString &fullFilePath, Q
         m_fName = "";
         m_extension = "";
         m_idFormat = 0;
-
         m_index = -1;
-
-
     }
 }
 
@@ -78,7 +76,7 @@ void FileCopyThread::run()
 
 }
 
-void FileCopyThread::copyFile(const int &index, const QUrl &filePath, QString &newFilePath)
+void FileCopyThread::copyFile(const int &index, const QUrl &filePath, QString &newFilePath, const bool &checkExtension)
 {    
     if (filePath.isLocalFile()) {
         QString fullPath = filePath.toLocalFile();
@@ -87,7 +85,19 @@ void FileCopyThread::copyFile(const int &index, const QUrl &filePath, QString &n
         uint sender {0};
         m_newFilePath = newFilePath;
 
-        emit checkFileExtension(index, fullPath, newFilePath, fileExt, sender);
+        if (checkExtension)
+            emit checkFileExtension(index, fullPath, newFilePath, fileExt, sender);
+        else {
+            m_isValid = true;
+            m_isAvailable = true;
+            m_newFilePath = newFilePath;
+            m_index = index;
+            QFileInfo fInf(fullPath);
+            m_fName = fInf.fileName();
+            m_extension = "";
+            m_idFormat = 0;
+            m_fullFilePath = fullPath;
+        }
     }
 }
 
@@ -102,5 +112,4 @@ void FileCopyThread::refreshFile(const int &index, const QUrl &filePath, QString
     QFileInfo fInf(m_fullFilePath);
     QString fileExt = fInf.suffix();
     emit checkFileExtension(index, m_fullFilePath, newFilePath, fileExt, sender);
-
 }

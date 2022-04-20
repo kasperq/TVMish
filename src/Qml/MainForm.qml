@@ -102,6 +102,7 @@ ApplicationWindow {
                 switch (currentIndex)
                 {
                 case 0:
+                    mainContr.openTvMode();
                     loader.source = "qrc:/Qml/Forms/TvForm.qml"
                     break;
                     //            case 1:
@@ -135,5 +136,8 @@ ApplicationWindow {
         anchors.leftMargin: tabRect.width
         source: "qrc:/Qml/Forms/TvForm.qml"
     }
-    Component.onCompleted: tab.focus = true
+    Component.onCompleted: {
+        tab.focus = true;
+        tab.currentIndex = 0;
+    }
 }

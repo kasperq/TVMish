@@ -21,7 +21,7 @@ int PlFileGW::rows() const
 
 void PlFileGW::select(const int &idPlaylist)
 {
-    DBst::getInstance().startTransDB();
+    DBst::getInstance().startTransDBdef();
     q_select = QSqlQuery(/*m_db*/ DBst::getInstance().db_def());
     q_select.prepare("select playlist_file.ID_FILE, playlist_file.ID_PLAYLIST, playlist_file.FILE_NAME, "
                      "playlist_file.FILE_PATH, playlist_file.FILE_PATH_LOCAL, playlist_file.id_format, "
@@ -43,7 +43,7 @@ void PlFileGW::select(const int &idPlaylist)
 
 void PlFileGW::insert(PlFile *newItem)
 {
-    DBst::getInstance().startTransDB();
+    DBst::getInstance().startTransDBdef();
     q_insert = QSqlQuery(/*m_db*/ DBst::getInstance().db_def());
     q_insert.prepare("insert into PLAYLIST_FILE "
                      "(ID_FILE, ID_PLAYLIST, FILE_NAME, FILE_PATH, FILE_PATH_LOCAL, ID_FORMAT, IS_AVAILABLE) "
@@ -60,16 +60,18 @@ void PlFileGW::insert(PlFile *newItem)
     q_insert.bindValue(":id_file", newId);
 
     DBst::getInstance().execAndGetQuery(q_insert);
-    DBst::getInstance().commitDbDef();
+    if (q_insert.exec()) {
+        DBst::getInstance().commitDbDef();
 //    q_insert.exec();
 
-    newItem->setIdFile(newId);
+        newItem->setIdFile(newId);
+    }
 }
 
 void PlFileGW::insert(const int &index, const int &idPlaylist, const QString &fileName, const QString &filePath,
                       const QString &filePathLocal, const int &idFormat, const bool &isAvailable)
 {
-    DBst::getInstance().startTransDB();
+    DBst::getInstance().startTransDBdef();
     q_insert = QSqlQuery(/*m_db*/ DBst::getInstance().db_def());
     q_insert.prepare("insert into PLAYLIST_FILE "
                      "(ID_FILE, ID_PLAYLIST, FILE_NAME, FILE_PATH, FILE_PATH_LOCAL, ID_FORMAT, IS_AVAILABLE) "
@@ -85,13 +87,14 @@ void PlFileGW::insert(const int &index, const int &idPlaylist, const QString &fi
     int newId = getMaxId() + 1;
     q_insert.bindValue(":id_file", newId);
 
-    DBst::getInstance().execAndCheck(q_insert).then([this, newId, index](bool result) {
-        if (result) {
+//    DBst::getInstance().execAndCheck(q_insert).then([this, newId, index](bool result) {
+//        if (result) {
+    if (q_insert.exec()) {
             DBst::getInstance().commitDbDef();
             q_insert.finish();            
             emit inserted(index, newId);            
         }
-    });
+//    });
 //    q_insert.exec();
 //    q_insert.finish();
 //    emit inserted(index, newId);
@@ -100,7 +103,7 @@ void PlFileGW::insert(const int &index, const int &idPlaylist, const QString &fi
 void PlFileGW::modify(const int &index, const int &idFile, const int &idPlaylist, const QString &fileName,
                       const QString &filePath, const QString &filePathLocal, const int &idFormat, const bool &isAvailable)
 {    
-    DBst::getInstance().startTransDB();
+    DBst::getInstance().startTransDBdef();
     q_modify = QSqlQuery(/*m_db*/ DBst::getInstance().db_def());
     q_modify.prepare("update PLAYLIST_FILE "
                       "set "
@@ -120,13 +123,14 @@ void PlFileGW::modify(const int &index, const int &idFile, const int &idPlaylist
     q_modify.bindValue(":id_format", idFormat);
     q_modify.bindValue(":is_available", isAvailable);
 
-    DBst::getInstance().execAndCheck(q_modify).then([this, index](bool result) {
-        if (result) {
+//    DBst::getInstance().execAndCheck(q_modify).then([this, index](bool result) {
+//        if (result) {
+    if (q_modify.exec()) {
             DBst::getInstance().commitDbDef();
             q_modify.finish();
             emit modified(index);            
         }
-    });
+//    });
 //    q_modify.exec();
 //    q_modify.finish();
 //    emit modified(index);
@@ -134,19 +138,20 @@ void PlFileGW::modify(const int &index, const int &idFile, const int &idPlaylist
 
 void PlFileGW::deleteRecord(const int &index, const int &idFile)
 {
-    DBst::getInstance().startTransDB();
+    DBst::getInstance().startTransDBdef();
     q_delete = QSqlQuery(/*m_db*/ DBst::getInstance().db_def());
     q_delete.clear();
     q_delete.prepare("delete from PLAYLIST_FILE where id_file = :id_file ");
     q_delete.bindValue(":id_file", idFile);    
 
-    DBst::getInstance().execAndCheck(q_delete).then([this, idFile, index](bool result) {
-        if (result) {
+//    DBst::getInstance().execAndCheck(q_delete).then([this, idFile, index](bool result) {
+//        if (result) {
+    if (q_delete.exec()) {
             qDebug() << "PlFileGW: delete res: " << DBst::getInstance().commitDbDef();;            
             q_delete.finish();
             emit deleted(index, idFile);
         }
-    });
+//    });
 
 //    q_delete.exec();
 //    q_delete.finish();
@@ -155,25 +160,26 @@ void PlFileGW::deleteRecord(const int &index, const int &idFile)
 
 void PlFileGW::deleteAll(const int &index, const int &idPlaylist)
 {
-    DBst::getInstance().startTransDB();
+    DBst::getInstance().startTransDBdef();
     q_delete = QSqlQuery(DBst::getInstance().db_def());
     q_delete.clear();
     q_delete.prepare("delete from PLAYLIST_FILE where id_playlist = :id_playlist ");
     q_delete.bindValue(":id_file", idPlaylist);
 
-    DBst::getInstance().execAndCheck(q_delete).then([this, idPlaylist, index](bool result) {
-        if (result) {
+//    DBst::getInstance().execAndCheck(q_delete).then([this, idPlaylist, index](bool result) {
+//        if (result) {
+    if (q_delete.exec()) {
             DBst::getInstance().commitDbDef();
             q_delete.finish();
             emit deletedAll(index, idPlaylist);
         }
-    });
+//    });
 }
 
 bool PlFileGW::findFormat(const QString &format)
 {        
     qDebug() << "plgw: findFormat: " << format;
-    DBst::getInstance().startTransDB();    
+    DBst::getInstance().startTransDBdef();
     q_temp = QSqlQuery(/*m_db*/ DBst::getInstance().db_def());
     q_temp.clear();
     q_temp.prepare("select format.id_format, format.naim "
@@ -196,6 +202,7 @@ bool PlFileGW::findFormat(const QString &format)
     } else {
         qDebug() << "findFormat error: " << q_temp.lastError();
     }
+    q_temp.finish();
     return false;
 }
 
@@ -249,12 +256,12 @@ int PlFileGW::getMaxId()
         int maxId {};
         if (q_temp.isValid())
             maxId = q_temp.value(0).toInt();
-        q_temp.finish();
+
         qDebug() << "PlFileGW::getMaxId(): " << maxId;
         return maxId;
     } else {
         qDebug() << "getMaxId error: " << q_temp.lastError();
     }
-
+    q_temp.finish();
     return 0;
 }

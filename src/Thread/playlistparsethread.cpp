@@ -26,16 +26,14 @@ bool PlaylistParseThread::isRunning() const
     return m_isRunning;
 }
 
-void PlaylistParseThread::setCategoryId(const int &idCategory, const int &idPlaylist, const int &idFile)
-{
-
-
-}
-
 void PlaylistParseThread::pushOutCurChannel()
 {
     if (m_channel.idChannel() == -1) {
-        m_outChannel = m_channel;
+        m_channels.push(m_channel);
+        m_channel.clear();
+    }
+    if (!m_channels.empty() && m_outChannel.idChannel() == 0/* && !m_isPausing*/) {
+        m_outChannel = m_channels.front();
         qDebug() << "PlaylistParseThread: parseLine: end: " << m_outChannel.naim() << " arh: " << m_outChannel.archDays() << " url: " << m_outChannel.url();
         emit channelParsed(m_outChannel, m_idPlaylist, m_idFile, m_outChannel.naim());
     }
@@ -51,6 +49,20 @@ void PlaylistParseThread::setPauseParsing(const bool &isPausing)
     m_mutex.unlock();
 }
 
+void PlaylistParseThread::deleteFrontChannel()
+{
+    qDebug() << "PlaylistParseThread::deleteFrontChannel(): ";
+    if (m_outChannel.idChannel() != 0)
+        m_outChannel.clear();
+    if (!m_channels.empty()) {
+        m_channels.pop();
+    }
+    if (m_channels.empty() && !m_isRunning && m_channel.idChannel() == 0)
+        emit fullyParsed(m_idPlaylist, m_idFile);
+    else
+        pushOutCurChannel();
+}
+
 void PlaylistParseThread::parseFile()
 {
     qDebug() << "PlaylistParseThread: parseFile: " << m_idPlaylist << " IdFile: " << m_idFile;
@@ -60,27 +72,18 @@ void PlaylistParseThread::parseFile()
         QString line = fileStream.readLine();
         if (line.contains(m_format.begin_file, Qt::CaseInsensitive)) {            
             m_channel.clear();
-//            int i = 0;
             while (!fileStream.atEnd()) {
-//                ++i;
-                if (!m_isPausing) {
-                    line = fileStream.readLine();
-                    if (!line.isEmpty()) {
-                        parseLine(line);
-                        //                    break;  //---------------------------------------------------------
-                    }
+                line = fileStream.readLine();
+                if (!line.isEmpty()) {
+                    parseLine(line);
                 }
                 if (!m_isRunning)
-//                if (i == 12)
                     break;
             }
         }
     }
-    pushOutCurChannel();
     m_isRunning = false;
     m_isPausing = false;
-    emit fullyParsed();
-//    emit finished();
 }
 
 void PlaylistParseThread::parseLine(QString &line)
@@ -107,8 +110,7 @@ void PlaylistParseThread::parseLine(QString &line)
             if (!m_catGW.find(0, groupName))
                 m_catGW.insert(0, groupName, true);
             idCat = m_catGW.findIdCategory(groupName);
-            m_channel.setIdCategory(idCat);
-            //TODO: try to find and save category name here to Category table and get id_category for m_channel
+            m_channel.setIdCategory(idCat);            
         }
         if (line.startsWith(m_format.begin_logoPath, Qt::CaseInsensitive)) {
             line.remove(m_format.begin_logoPath);

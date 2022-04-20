@@ -22,6 +22,7 @@ class PlFiles : public QObject
     Q_OBJECT
     Q_PROPERTY(int rowCount READ rowCount NOTIFY rowCountChanged)
     Q_PROPERTY(int idPlaylist READ idPlaylist WRITE setIdPlaylist)
+    Q_PROPERTY(int idFile READ curIdFile)
     Q_PROPERTY(QString fileName READ fileName)
     Q_PROPERTY(QUrl curDir READ getCurDir WRITE setCurDir)
 
@@ -49,6 +50,7 @@ public:
 
     void setSets(const Settings &value);
     int curIdFile() const;
+    void initConnections();
 
 
 signals:
@@ -81,6 +83,7 @@ signals:
 
 public slots:
     void open(const int &idPlaylist = 0);
+    void open(const bool &allFilesInPlaylist, const int &idFile);
     void appendNewItem();
     void addItemFromLocalFile(int index, QUrl filePath);
     void addItemFromBuffer(int index, QUrl filePath);
@@ -92,6 +95,7 @@ public slots:
     QString getClipboardString();
     void setFilePath(int index, QString filePath);
     void selectFile();
+
 
     void downloadFileFromInternet(const int &index, QString &fullFilePath, QString &newFilePath, const QString &extension,
                                   const bool &isValid, const int &idFormat);
@@ -122,9 +126,7 @@ private:
 
     QEventLoop m_eventLoop;
 
-    void initConnections();
     void waitForId();
-
 
 };
 

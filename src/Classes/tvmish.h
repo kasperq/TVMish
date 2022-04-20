@@ -3,7 +3,6 @@
 
 #include <QObject>
 
-//#include "DB/database.h"
 #include "Controllers/maincontroller.h"
 #include "settings.h"
 
@@ -28,11 +27,10 @@ public slots:
     void loadApp();
 
 private:
-//    DataBase db;
     QSqlDatabase m_db;
     QSqlQuery query;
 
-    MainController m_mainContr /*{db}*/;
+    MainController m_mainContr;
     Settings m_sets;
 
     std::string m_url;

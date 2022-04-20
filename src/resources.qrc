@@ -29,8 +29,6 @@
         <file>Qml/Ico/link-add.ico</file>
         <file>Qml/Ico/link.ico</file>
         <file>Qml/Ico/list.ico</file>
-        <file>Qml/Ico/move_down.ico</file>
-        <file>Qml/Ico/move_up.ico</file>
         <file>Qml/Ico/rotate.ico</file>
         <file>Qml/Ico/tv.ico</file>
         <file>Qml/Elements/ToolBtn.qml</file>
@@ -44,5 +42,30 @@
         <file>Qml/Elements/SureDialog.qml</file>
         <file>Qml/Elements/ErrorDialog.qml</file>
         <file>Qml/ListView/PlaylistExpandedRec.qml</file>
+        <file>Qml/ListView/ChannelsView.qml</file>
+        <file>Qml/Elements/MyTextEdit.qml</file>
+        <file>Qml/functions.js</file>
+        <file>Qml/Elements/SplitterVert.qml</file>
+        <file alias="default_logo">data/channels_logos/display-mac.png</file>
+        <file>Qml/Elements/ChannelLogoName.qml</file>
+        <file>Qml/Ico/move_down.png</file>
+        <file>Qml/Ico/move_up.png</file>
+        <file>Qml/Ico/delete.png</file>
+        <file>Qml/Ico/cancel.png</file>
+        <file>Qml/Ico/add.png</file>
+        <file>Qml/Ico/refresh.png</file>
+        <file>Qml/Ico/file-add.png</file>
+        <file>Qml/Ico/file-remove.png</file>
+        <file>Qml/Ico/favorite.png</file>
+        <file>Qml/Ico/favorite-add.png</file>
+        <file>Qml/Ico/find.png</file>
+        <file>Qml/Elements/FindEdit.qml</file>
+        <file>Qml/Ico/back.png</file>
+        <file>Qml/Ico/checkbox.png</file>
+        <file>Qml/Ico/checkbox-empty.png</file>
+        <file>Qml/Elements/MyCheckBox.qml</file>
+        <file>Qml/ListView/CategoryChannelView.qml</file>
+        <file>Qml/ListView/ScheduleView.qml</file>
+        <file>Qml/Elements/PlayerMiniForm.qml</file>
     </qresource>
 </RCC>

@@ -15,7 +15,6 @@ class Settings : public QObject
 public:
     Settings();
     Settings(const Settings &value, QObject *parent = nullptr);
-//    Settings(const QSqlDatabase &value);
     virtual ~Settings();
 
     void getSets();
@@ -25,21 +24,19 @@ public:
     QString curPlDir();
     void setCurPlDir(const QString &value);
 
-//    void setDB(const QSqlDatabase &db);
 
-    void modifyThr(QString &appPath, QString &curPlDir);
+
+    QString &logoPath();
 
 private:
-    QString m_appPath;
-    uint m_rows;
-    QString m_curPlDir;
-    int m_id;
+    QString m_appPath {};
+    uint m_rows {};
+    QString m_curPlDir {};
+    int m_id {};
+    QString m_logoPath {"/data/channels_logos/"};
 
-//    QSqlDatabase m_db;
     QSqlQuery q_select;
     QSqlQuery q_temp;
-
-//    SetsThread m_setsThr {m_db};
 
     void countRows();
 

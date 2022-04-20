@@ -2,6 +2,8 @@
 #define CHANNEL_H
 
 #include <QString>
+#include <QUrl>
+#include <QImage>
 
 class Channel
 {
@@ -41,6 +43,24 @@ public:
     int idLogo() const;
     void setIdLogo(const int &newLogo);
 
+    bool isAvailable() const;
+    void setIsAvailable(const bool &newIsAvailable);
+
+    QString categoryNaim() const;
+    void setCategoryNaim(const QString &newCategoryNaim);
+
+    QImage logo() const;
+    void setLogo(const QImage &newLogo);
+
+    QUrl logoPath() const;
+    void setLogoPath(const QUrl &newLogoPath);
+
+    bool isFavorite() const;
+    void setIsFavorite(const bool &newIsFavorite);
+
+    int numFavorite() const;
+    void setNumFavorite(const int &newNumFavorite);
+
 private:
     int m_idChannel {};
     QString m_naim;
@@ -52,6 +72,12 @@ private:
     int m_numPlaylist {};
     int m_archDays {};
     int m_idLogo {};
+    bool m_isAvailable {false};
+    QString m_categoryNaim {};
+    QImage m_logo;
+    QUrl m_logoPath {};
+    bool m_isFavorite {false};
+    int m_numFavorite {};
 
 };
 

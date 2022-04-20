@@ -91,7 +91,7 @@ QFuture<bool> DBst::open()
             qDebug() << m_dbType << m_connName << m_dbName;
             auto m_db = QSqlDatabase::addDatabase(m_dbType, m_connName);
             m_db.setDatabaseName(m_dbName);            
-            m_db.setConnectOptions("QSQLITE_OPEN_URI;QSQLITE_BUSY_TIMEOUT=5000;QSQLITE_ENABLE_SHARED_CACHE;SQLITE_OPEN_MEMORY");
+//            m_db.setConnectOptions("QSQLITE_OPEN_URI;QSQLITE_BUSY_TIMEOUT=5000;QSQLITE_ENABLE_SHARED_CACHE;SQLITE_OPEN_MEMORY");
             bool res {false};
             if (m_db.open()) {
                 res = true;
@@ -284,7 +284,7 @@ void DBst::initDefDb()
     m_dbDef = QSqlDatabase::addDatabase(m_dbType, m_mainThrConnName);
     m_dbDef.setDatabaseName(m_dbName);    
     qDebug() << "hasTrans: " << m_dbDef.driver()->hasFeature(QSqlDriver::Transactions);
-    m_dbDef.setConnectOptions("QSQLITE_OPEN_URI;QSQLITE_BUSY_TIMEOUT=5000;QSQLITE_ENABLE_SHARED_CACHE;SQLITE_OPEN_MEMORY");
+//    m_dbDef.setConnectOptions("QSQLITE_OPEN_URI;QSQLITE_BUSY_TIMEOUT=5000;QSQLITE_ENABLE_SHARED_CACHE;SQLITE_OPEN_MEMORY");
     if (m_dbDef.open()) {                
         qDebug() << "DBdef opened: " << QThread::currentThreadId() << " trans: " << m_dbDef.transaction();
     } else {

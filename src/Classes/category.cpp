@@ -10,14 +10,14 @@ Category::~Category()
 
 }
 
-int Category::id() const
+int Category::idCategory() const
 {
-    return m_id;
+    return m_idCategory;
 }
 
-void Category::setId(const int &value)
+void Category::setIdCategory(const int &value)
 {
-    m_id = value;
+    m_idCategory = value;
 }
 
 QString Category::name() const
@@ -28,4 +28,14 @@ QString Category::name() const
 void Category::setName(const QString &value)
 {
     m_name = value;
+}
+
+bool Category::isReadonly() const
+{
+    return m_isReadonly;
+}
+
+void Category::setIsReadonly(const bool &newIsReadonly)
+{
+    m_isReadonly = newIsReadonly;
 }

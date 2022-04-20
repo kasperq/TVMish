@@ -112,8 +112,10 @@ void PlFiles::clear()
 
 void PlFiles::scroll(int index)
 {
-    qDebug() << "plfiles: scroll: " << index;
-    m_curIdFile = m_files.at(index).idFile();
+    if (m_files.isEmpty())
+        m_curIdFile = 0;
+    else
+        m_curIdFile = m_files.at(index).idFile();
     emit filesScrolled(m_idPlaylist, m_curIdFile);
 }
 
@@ -136,8 +138,9 @@ void PlFiles::addItem(const int &idFile, const int &idPlaylist, const QString &f
 
 int PlFiles::rowCount() const
 {
-//    qDebug() << "rowCount: " << m_files.size();
-    return m_files.size();
+    if (!m_files.isEmpty())
+        return m_files.size();
+    return 0;
 }
 
 QString PlFiles::fileName() const
@@ -154,7 +157,7 @@ void PlFiles::setFilePath(int index, QString filePath)
 }
 
 void PlFiles::selectFile()
-{
+{    
 //    QFileDialog flDlg(QApplication::);
 //    flDlg.setFileMode(QFileDialog::ExistingFile);
 //    flDlg.setNameFilter(tr("m3u playlists (*.m3u, *.m3u8)"));
@@ -210,8 +213,10 @@ int PlFiles::curIndex() const
 void PlFiles::open(const int &idPlaylist)
 {
     qDebug() << "plfiles open id: " << idPlaylist;
-    if (m_files.size() > 0)
+    if (m_files.size() > 0) {
         emit selectItem(0);
+        emit scroll(0);
+    }
 //    QString fileName;
 //    QString filePath;
 //    QString filePathLocal;
@@ -251,6 +256,16 @@ void PlFiles::open(const int &idPlaylist)
     emit rowCountChanged(rowCount());
 }
 
+void PlFiles::open(const bool &allFilesInPlaylist, const int &idFile)
+{
+    qDebug() << "PlFiles: open: all: " << allFilesInPlaylist << " idFile: " << idFile;
+    if (allFilesInPlaylist) {
+        emit filesScrolled(m_idPlaylist, 0);
+    } else {
+        emit filesScrolled(m_idPlaylist, idFile);
+    }
+}
+
 void PlFiles::appendNewItem()
 {
     emit beforeItemAppended();
@@ -274,11 +289,12 @@ void PlFiles::appendNewItem()
 
 void PlFiles::addItemFromLocalFile(int index, QUrl filePath)
 {
+    qDebug() << "PlFiles::addItemFromLocalFile: " << filePath;
     waitForId();
     auto id = m_files.at(index).idFile();
     QString newFilePath {m_sets->appPath() + "/temp/" + QString::number(id) + "/" + filePath.fileName()};
 
-    m_plThr.copyFile(index, filePath, newFilePath);
+    m_plThr.copyFile(index, filePath, newFilePath, true);
     m_plThr.start();
 }
 
@@ -447,17 +463,19 @@ void PlFiles::initConnections()
 
 void PlFiles::waitForId()
 {
-    m_eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
+    qDebug() << "PlFiles::waitForId()";
+//    m_eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
 }
 
 void PlFiles::downloadFileFromInternet(const int &index, QString &fullFilePath, QString &newFilePath, const QString &extension,
                                        const bool &isValid, const int &idFormat)
 {
-    m_fileLoader.doDownload(newFilePath, index, fullFilePath, extension, isValid, idFormat);
+    m_fileLoader.doDownload(newFilePath, index, fullFilePath, extension, isValid, idFormat, false);
 }
 
 void PlFiles::setNewItemIdFile(const int &index, const int &idFile)
 {
+    qDebug() << "PlFiles::setNewItemIdFile: " << idFile;
     auto newFileItem = m_files.at(index);
     newFileItem.setIdFile(idFile);
     m_curIdFile = idFile;
@@ -471,7 +489,7 @@ void PlFiles::setNewItemIdFile(const int &index, const int &idFile)
 void PlFiles::addCopiedFileInfo(const QString &fileName, const QString &filePath, const QString &newFilePath,
                                 const QString &extension, const int &idFormat, const bool &isAvailable, const int &index)
 {
-    qDebug() << "addCopiedFileInfo " << index;
+    qDebug() << "PlFiles::addCopiedFileInfo: " << index << " fileName: " << fileName;
     PlFile item = m_files.at(index);
     if (item.fileName() == "")
         item.setFileName(fileName);
@@ -495,7 +513,7 @@ void PlFiles::fileNotCopied(const QString &errorMsg, const QString &fileName, co
                             const QString &extension, const int &idFormat, const bool &isAvailable, const int &index)
 {
     m_plThr.disconnect();
-    qDebug() << "File not copied: " << errorMsg;
+    qDebug() << "PlFiles::fileNotCopied: " << errorMsg;
     addCopiedFileInfo(fileName, filePath, newFilePath, extension, idFormat, isAvailable, index);
 
 }

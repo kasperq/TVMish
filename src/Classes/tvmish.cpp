@@ -93,7 +93,7 @@ bool TVmish::startApp()
 
 void TVmish::loadApp()
 {
-    m_sets.getSets();
+    m_sets.getSets();    
     if (m_appPath != m_sets.appPath())
         m_sets.setAppPath(m_appPath);
     m_mainContr.loadMainForm();

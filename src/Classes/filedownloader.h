@@ -14,7 +14,7 @@ public:
     virtual ~FileDownloader() = default;
 
     void doDownload(QString &newPath, const int &index, QString &fullFilePath, const QString &extension,
-                    const bool &isValid, const int &idFormat);
+                    const bool &isValid, const int &idFormat, const bool &isAppend);
     bool saveFileName();
     bool saveToDisk(const QString &filename, QIODevice *data);
     static bool isHttpRedirect(QNetworkReply *reply);
@@ -34,15 +34,16 @@ private:
     QList<QNetworkReply *> currentDownloads;
     QFile m_file;
 
-    QString m_newPath;
-    QString m_fullFilePath;
-    QString m_newFilePath;
-    QString m_fName;
-    QString m_extension;
-    int m_idFormat;
+    QString m_newPath {};
+    QString m_fullFilePath {};
+    QString m_newFilePath {};
+    QString m_fName {};
+    QString m_extension {};
+    int m_idFormat {};
     bool m_isAvailable {false};
     bool m_isValid {false};
     int m_index {-1};
+    bool m_isAppend {false};
 
     QString m_errorMsg {tr("")};
 

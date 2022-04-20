@@ -3,16 +3,20 @@
 
 #include <QString>
 
-enum SenderFunc {
-    addUrlFile,
-    addLocalFile
+//enum SenderFunc {
+//    addUrlFile,
+//    addLocalFile
+//};
+struct ChannelSegment {
+    QString url {};
+    double duration {};
+    QString localUrl {};
+    bool isDownloaded {false};
+    bool isPlaying {false};
 };
 
 struct M3UFormat
 {
-//    M3UFormat() {
-
-//    };
     const QString begin_file {"#EXTM3U"};
     const QString begin_channelInfo {"#EXTINF:"};
     const QString begin_group {"#EXTGRP:"};

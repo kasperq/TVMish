@@ -18,17 +18,17 @@ public:
 
     int rows() const;
 
-    void select();
     void insert(Playlist *newItem);    
 
     QSqlQuery *data() const;    
 
 signals:
-    void selected();
+    void selected(const int &idPlaylist);
     void getNewIdPlaylistAndNum(const int &index, const int &idPlaylist, const uint &num);
     void deleted(const int &idPlaylist, const int &index);
 
 public slots:
+    void select(const bool &isCurrent);
     void insert(const int &index, const QString &naim, const bool &isCurrent);
     void modify(const int &idPlaylist, const QString &naim, const bool &isCurrent, const uint &num);
     void deleteRecord(const int &idPlaylist, const int &index);

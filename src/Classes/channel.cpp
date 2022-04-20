@@ -123,3 +123,63 @@ void Channel::setIdLogo(const int &newIdLogo)
 {
     m_idLogo = newIdLogo;
 }
+
+bool Channel::isAvailable() const
+{
+    return m_isAvailable;
+}
+
+void Channel::setIsAvailable(const bool &newIsAvailable)
+{
+    m_isAvailable = newIsAvailable;
+}
+
+QString Channel::categoryNaim() const
+{
+    return m_categoryNaim;
+}
+
+void Channel::setCategoryNaim(const QString &newCategoryNaim)
+{
+    m_categoryNaim = newCategoryNaim;
+}
+
+QImage Channel::logo() const
+{
+    return m_logo;
+}
+
+void Channel::setLogo(const QImage &newLogo)
+{
+    m_logo = newLogo;
+}
+
+QUrl Channel::logoPath() const
+{
+    return m_logoPath;
+}
+
+void Channel::setLogoPath(const QUrl &newLogoPath)
+{
+    m_logoPath = newLogoPath;
+}
+
+bool Channel::isFavorite() const
+{
+    return m_isFavorite;
+}
+
+void Channel::setIsFavorite(const bool &newIsFavorite)
+{
+    m_isFavorite = newIsFavorite;
+}
+
+int Channel::numFavorite() const
+{
+    return m_numFavorite;
+}
+
+void Channel::setNumFavorite(const int &newNumFavorite)
+{
+    m_numFavorite = newNumFavorite;
+}

@@ -29,9 +29,9 @@ int CategoryGW::rows() const
 
 void CategoryGW::select()
 {    
-    DBst::getInstance().startTransDB();
+    DBst::getInstance().startTransDBdef();
     q_select = QSqlQuery(DBst::getInstance().db_def());
-    q_select.prepare("select category.id_category, category.name "
+    q_select.prepare("select category.id_category, category.name, category.is_readonly "
                      "from category ");
     q_select.exec();
     calcRowCount();
@@ -40,7 +40,7 @@ void CategoryGW::select()
 
 void CategoryGW::insert(const int &index, const QString &name, const bool &waitForResult)
 {    
-    DBst::getInstance().startTransDB();
+    DBst::getInstance().startTransDBdef();
     q_insert = QSqlQuery(DBst::getInstance().db_def());
     q_insert.prepare("insert into CATEGORY "
                      "(ID_CATEGORY, NAME) "
@@ -50,24 +50,25 @@ void CategoryGW::insert(const int &index, const QString &name, const bool &waitF
     int newId = getMaxId() + 1;
     q_insert.bindValue(":id_category", newId);
 
-    if (waitForResult) {
-        q_insert.exec();
-        q_insert.finish();
-        emit inserted(index, newId);
-    } else {
-        DBst::getInstance().execAndCheck(q_insert).then([this, newId, index](bool result) {
-            if (result) {
+//    if (waitForResult) {
+//        q_insert.exec();
+//        q_insert.finish();
+//        emit inserted(index, newId);
+//    } else {
+//        DBst::getInstance().execAndCheck(q_insert).then([this, newId, index](bool result) {
+//            if (result) {
+    if (q_insert.exec()) {
                 DBst::getInstance().commitDbDef();
                 q_insert.finish();
                 emit inserted(index, newId);
             }
-        });
-    }
+//        });
+//    }
 }
 
 void CategoryGW::modify(const int &index, const int &idCategory, const QString &name)
 {    
-    DBst::getInstance().startTransDB();
+    DBst::getInstance().startTransDBdef();
     q_modify = QSqlQuery(DBst::getInstance().db_def());
     q_modify.prepare("update CATEGORY "
                       "set "
@@ -77,34 +78,36 @@ void CategoryGW::modify(const int &index, const int &idCategory, const QString &
     q_modify.bindValue(":id_category", idCategory);
     q_modify.bindValue(":name", name);
 
-    DBst::getInstance().execAndCheck(q_modify).then([this, index](bool result) {
-        if (result) {
+//    DBst::getInstance().execAndCheck(q_modify).then([this, index](bool result) {
+//        if (result) {
+    if (q_modify.exec()) {
             DBst::getInstance().commitDbDef();
             q_modify.finish();
             emit modified(index);
         }
-    });
+//    });
 }
 
 void CategoryGW::deleteRecord(const int &index, const int &idCategory)
 {  
-    DBst::getInstance().startTransDB();
+    DBst::getInstance().startTransDBdef();
     q_delete = QSqlQuery(DBst::getInstance().db_def());
     q_delete.prepare("delete from CATEGORY where id_category = :id_category ");
     q_delete.bindValue(":id_category", idCategory);
 
-    DBst::getInstance().execAndCheck(q_delete).then([this, idCategory, index](bool result) {
-        if (result) {
+//    DBst::getInstance().execAndCheck(q_delete).then([this, idCategory, index](bool result) {
+//        if (result) {
+    if (q_delete.exec()) {
             DBst::getInstance().commitDbDef();
             q_delete.finish();
             emit deleted(index, idCategory);
         }
-    });
+//    });
 }
 
 bool CategoryGW::find(const int &index, const QString &name)
 {    
-    DBst::getInstance().startTransDB();
+    DBst::getInstance().startTransDBdef();
     q_temp = QSqlQuery(DBst::getInstance().db_def());    
     q_temp.prepare("select category.id_category, category.name "
                    "from category "
@@ -130,7 +133,7 @@ bool CategoryGW::find(const int &index, const QString &name)
 
 int CategoryGW::findIdCategory(const QString &name)
 {    
-    DBst::getInstance().startTransDB();
+    DBst::getInstance().startTransDBdef();
     q_temp = QSqlQuery(DBst::getInstance().db_def());
     q_temp.prepare("select category.id_category, category.name "
                    "from category "
@@ -160,12 +163,14 @@ void CategoryGW::calcRowCount()
 
 int CategoryGW::getMaxId()
 {    
-    DBst::getInstance().startTransDB();
+    DBst::getInstance().startTransDBdef();
     q_temp = QSqlQuery(DBst::getInstance().db_def());
     q_temp.prepare("select max(category.id_category) max_id from category ");
-    q_temp.exec();
-    q_temp.first();
-    int maxId {q_temp.value(0).toInt()};
-    q_temp.finish();
+    int maxId {};
+    if (q_temp.exec()) {
+        q_temp.first();
+        maxId = q_temp.value(0).toInt();
+        q_temp.finish();
+    }
     return maxId;
 }

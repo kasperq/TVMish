@@ -5,7 +5,7 @@
 Categories::Categories(QObject *parent)
     : QObject{parent}
 {
-
+    initConnections();
 }
 
 Categories::~Categories()
@@ -24,24 +24,36 @@ bool Categories::setItemAt(int index, Category &item)
         return false;
 
     const Category &oldItem = m_categories.at(index);
-    if (item.id() == oldItem.id()
-        && item.name() == oldItem.name())
+    if (item.idCategory() == oldItem.idCategory()
+        && item.name() == oldItem.name()
+        && item.isReadonly() == oldItem.isReadonly())
         return false;
 
     m_categories[index] = item;
     QString name = item.name();
-    int id = item.id();
+    int id = item.idCategory();
+    bool isReadonly = item.isReadonly();
+
+    emit itemEdited(index, id, name, isReadonly);
 
     return true;
 }
 
-void Categories::addItem(const int &idCategory, const QString &name)
+void Categories::addItem(const int &idCategory, const QString &name, const bool &isReadonly)
 {
     Category newCat;
-    newCat.setId(idCategory);
+    newCat.setIdCategory(idCategory);
     newCat.setName(name);
+    newCat.setIsReadonly(isReadonly);
 
     m_categories.append(newCat);
+}
+
+void Categories::clear()
+{
+    if (m_categories.size() > 0)
+        m_categories.clear();
+    emit rowCountChanged(rowCount());
 }
 
 int Categories::rowCount() const
@@ -51,30 +63,49 @@ int Categories::rowCount() const
 
 int Categories::curCategoryId() const
 {
-    return m_curCategoryId;
+    return m_curIdCategory;
 }
 
 void Categories::setCurCategoryId(const int &value)
 {
-    m_curCategoryId = value;
+    m_curIdCategory = value;
 }
 
-bool Categories::find(const int &id)
+//bool Categories::find(const int &id)
+//{
+//    return false;
+//}
+
+//bool Categories::find(const QString &name)
+//{
+
+//}
+
+//void Categories::add(const QString &name)
+//{
+
+//}
+
+//int Categories::getIdCategory(const QString &name)
+//{
+
+//}
+
+void Categories::open()
 {
-    return false;
+    m_curIdCategory = 0;
+    if (m_categories.size() > 0)
+        emit selectItem(0);
+    emit rowCountChanged(rowCount());
 }
 
-bool Categories::find(const QString &name)
+void Categories::scroll(int index)
 {
-
+    m_curIdCategory = m_categories.at(index).idCategory();
+    emit categoriesScrolled(m_curIdCategory);
 }
 
-void Categories::add(const QString &name)
-{
-
-}
-
-int Categories::getId(const QString &name)
+void Categories::initConnections()
 {
 
 }

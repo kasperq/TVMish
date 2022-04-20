@@ -26,18 +26,31 @@ int ChannelGW::rows() const
 }
 
 void ChannelGW::select(const int &idPlaylist, const int &idFile)
-{
-    qDebug() << "channelGW: select: " << idFile << " idPlaylit: " << idPlaylist;
-    DBst::getInstance().startTransDB();
+{    
+    DBst::getInstance().startTransDBdef();
     q_select = QSqlQuery(DBst::getInstance().db_def());
-    QString queryStr;
+    QString queryStr;    
+    q_select.clear();
     queryStr = "select channels.ARCH_DAYS, channels.ID_CATEGORY, channels.ID_CHANNEL, channels.ID_FILE, "
-               "channels.ID_LOGO, channels.ID_PLAYLIST, channels.NAIM, channels.NUM_FILE, channels.NUM_PLAYLIST, "
-               "channels.url "
-               "from channels ";
+               "channels.ID_LOGO, channels.ID_PLAYLIST, channels.NAIM, channels.NUM_PLAYLIST, "
+               "channels.url, category.NAME category_naim, "
+               "coalesce(logos.LOGO_PATH, (select logos.LOGO_PATH from logos where logos.ID_LOGO = 1)) LOGO_PATH,"
+               "channels.is_favorite, channels.num_favorite, channels.is_available, channels.naim_lower "
+               "from channels "
+               "left join category on category.ID_CATEGORY = channels.ID_CATEGORY "
+               "left join logos on logos.ID_LOGO = channels.ID_LOGO "
+               "where channels.ID_PLAYLIST = :id_playlist ";
+
     if (idFile != 0)
-        queryStr += "where channels.ID_FILE = :id_file ";
+        queryStr += "and channels.ID_FILE = :id_file ";
+    if (!m_filterNaim.isEmpty())
+        queryStr += "and trim(channels.NAIM_LOWER) like trim(\"%" + m_filterNaim +"%\") ";
+    if (m_idCategory != 0)
+        queryStr += "and channels.ID_CATEGORY = " + QString::number(m_idCategory) + " ";
+    queryStr += "order by iif(coalesce(channels.is_favorite, false) = true, channels.num_favorite, channels.num_playlist) ";
+
     q_select.prepare(queryStr);
+    q_select.bindValue(":id_playlist", idPlaylist);
     if (idFile != 0)
         q_select.bindValue(":id_file", idFile);
     if (q_select.exec()) {
@@ -46,24 +59,49 @@ void ChannelGW::select(const int &idPlaylist, const int &idFile)
         //    q_select = future.result();
         q_select.first();
         calcRowCount();
-        qDebug() << "channelGW: selected";
     } else {
         qDebug() << "channelGW::select error: " << q_select.lastError();
     }
-    emit selected(idFile);
+    emit selected(idPlaylist, idFile);
+}
+
+void ChannelGW::selectWithFilter(const int &idPlaylist, const int &idFile, const QString &filterNaim, const int &idCategory)
+{
+//    qDebug() << "ChannelGW::selectWithFilter: idPl: " << idPlaylist << " idF: " << idFile << " fil: " << filterNaim;
+    m_filterNaim = filterNaim;
+    m_idCategory = idCategory;
+    select(idPlaylist, idFile);
 }
 
 void ChannelGW::insert(const int &index, const QString &naim, const QString &url, const int &idFile, const int &idPlaylist,
-                       const int &idCategory, const int &numFile, const int &numPlaylist, const int &archDays,
-                       const int &idLogo, const bool &generateNums)
+                       const int &idCategory, const int &numPlaylist, const int &archDays, const int &idLogo,
+                       const bool &generateNums, const bool &isFavorite, const int &numFav, const bool &isAvailable)
 {
+    if (!m_isPreparedForInsert) {
+        prepareInsert();
+        m_newId = getMaxId() + 1;
+        if (generateNums) {            
+            m_maxNumPlaylist = getNumPlaylist(idPlaylist) + 1;
+        } else {
+            m_maxNumPlaylist = numPlaylist;
+        }
+    } else {
+        m_newId++;
+        if (generateNums) {
+            m_maxNumPlaylist++;
+        } else {            
+            m_maxNumPlaylist = numPlaylist;
+        }
+    }
     DBst::getInstance().startTransDB();
     qDebug() << "channelGW: insert: " << naim;
     q_insert = QSqlQuery(DBst::getInstance().db_def());
     q_insert.clear();
     q_insert.prepare("insert into CHANNELS "
-                     "(ID_CHANNEL, NAIM, URL, ID_FILE, ID_PLAYLIST, ID_CATEGORY, NUM_FILE, NUM_PLAYLIST, ARCH_DAYS, ID_LOGO) "
-                     "values (:id_channel, :naim, :url, :id_file, :id_playlist, :id_category, :num_file, :num_playlist, :arch_days, :id_logo) ");
+                     "(ID_CHANNEL, NAIM, URL, ID_FILE, ID_PLAYLIST, ID_CATEGORY, NUM_PLAYLIST, ARCH_DAYS, "
+                     "ID_LOGO, IS_FAVORITE, NUM_FAVORITE, IS_AVAILABLE, NAIM_LOWER) "
+                     "values (:id_channel, :naim, :url, :id_file, :id_playlist, :id_category, :num_playlist, "
+                     ":arch_days, :id_logo, :is_favorite, :num_favorite, :is_available, :naim_lower) ");
     q_insert.bindValue(":naim", naim);
     q_insert.bindValue(":url", url);
     q_insert.bindValue(":id_file", idFile);
@@ -71,37 +109,42 @@ void ChannelGW::insert(const int &index, const QString &naim, const QString &url
     q_insert.bindValue(":id_category", idCategory);    
     q_insert.bindValue(":arch_days", archDays);
     q_insert.bindValue(":id_logo", idLogo);
+    q_insert.bindValue(":is_favorite", isFavorite);
+    q_insert.bindValue(":num_favorite", numFav);
+    q_insert.bindValue(":is_available", isAvailable);
+    q_insert.bindValue(":naim_lower", naim.toLower());
+
+    q_insert.bindValue(":num_playlist", m_maxNumPlaylist);
+    q_insert.bindValue(":id_channel", m_newId);
 
 
-    int maxNumFile {numFile};
-    int maxNumPlaylist {numPlaylist};
-    if (generateNums) {
-        maxNumFile = getNumFile(idPlaylist, idFile) + 1;
-        maxNumPlaylist = getNumPlaylist(idPlaylist) + 1;
-    }
-    q_insert.bindValue(":num_file", maxNumFile);
-    q_insert.bindValue(":num_playlist", maxNumPlaylist);
-
-    int newId = getMaxId() + 1;    
-    q_insert.bindValue(":id_channel", newId);
-
-    qDebug() << "channelGW: will insert";
-    DBst::getInstance().execAndCheck(q_insert).then([this, newId, index, maxNumFile, maxNumPlaylist, idFile, idPlaylist, naim](bool result) {
+    DBst::getInstance().execAndCheck(q_insert).then([this, naim, index, idFile, idPlaylist](bool result) {
         qDebug() << "channelGW: inserted: " << result << " naim: " << naim;
         if (result) {
-//            save();
             q_insert.finish();
-            qDebug() << "channelGW: inserted: commited";
-            emit inserted(index, newId, maxNumFile, maxNumPlaylist, idFile, idPlaylist);
+            qDebug() << "channelGW: inserted: finished";
+            emit inserted(index, m_newId, m_maxNumPlaylist, idFile, idPlaylist);
         }
     });
+
+//    try {
+//    if (q_insert.exec()) {
+//            q_insert.finish();
+//            qDebug() << "channelGW: inserted: commited";
+//            emit inserted(index, m_newId, m_maxNumPlaylist, idFile, idPlaylist);
+//        } else {
+//        qDebug() << "channelGW error: " << q_insert.lastError();
+//    }
+//    } catch (...) {
+//    }
+
 }
 
 void ChannelGW::modify(const int &index, const int &idChannel, const QString &naim, const QString &url, const int &idFile,
-                       const int &idPlaylist, const int &idCategory, const int &numFile, const int &numPlaylist,
-                       const int &archDays, const int &idLogo)
+                       const int &idPlaylist, const int &idCategory, const int &numPlaylist, const int &archDays,
+                       const int &idLogo, const bool &isFavorite, const int &numFav, const bool &isAvailable)
 {
-    DBst::getInstance().startTransDB();
+    DBst::getInstance().startTransDBdef();
     q_modify = QSqlQuery(DBst::getInstance().db_def());
     q_modify.prepare("update CHANNELS "
                      "set "
@@ -110,11 +153,14 @@ void ChannelGW::modify(const int &index, const int &idChannel, const QString &na
                      "URL = :url, "
                      "ID_FILE = :id_file, "
                      "ID_PLAYLIST = :id_playlist, "
-                     "ID_CATEGORY = :id_category, "
-                     "NUM_FILE = :num_file, "
+                     "ID_CATEGORY = :id_category, "                    
                      "NUM_PLAYLIST = :num_playlist, "
                      "ARCH_DAYS = :arch_days, "
-                     "ID_LOGO = :id_logo "
+                     "ID_LOGO = :id_logo,"
+                     "IS_FAVORITE = :is_favorite,"
+                     "NUM_FAVORITE = :num_favorite,"
+                     "IS_AVAILABLE = :is_available,"
+                     "NAIM_LOWER = :naim_lower "
                      "where id_channel = :id_channel ");
     q_modify.bindValue(":id_channel", idChannel);
     q_modify.bindValue(":naim", naim);
@@ -122,115 +168,108 @@ void ChannelGW::modify(const int &index, const int &idChannel, const QString &na
     q_modify.bindValue(":id_file", idFile);
     q_modify.bindValue(":id_playlist", idPlaylist);
     q_modify.bindValue(":id_category", idCategory);
-    q_modify.bindValue(":num_file", numFile);
     q_modify.bindValue(":num_playlist", numPlaylist);
     q_modify.bindValue(":arch_days", archDays);
     q_modify.bindValue(":id_logo", idLogo);
+    q_modify.bindValue(":is_favorite", isFavorite);
+    q_modify.bindValue(":num_favorite", numFav);
+    q_modify.bindValue(":is_available", isAvailable);
+    q_modify.bindValue(":naim_lower", naim.toLower());
 
-    DBst::getInstance().execAndCheck(q_modify).then([this, index](bool result) {
-        if (result) {
+//    DBst::getInstance().execAndCheck(q_modify).then([this, index](bool result) {
+//        if (result) {
+    if (q_modify.exec()) {
             save();
             q_modify.finish();
             emit modified(index);
         }
-    });
+    //    });
+}
+
+void ChannelGW::setFavorite(const int &index, const bool &isFavorite, const int &idChannel, const int &idPlaylist)
+{
+    DBst::getInstance().startTransDBdef();
+    q_modify = QSqlQuery(DBst::getInstance().db_def());
+    q_modify.prepare("update CHANNELS "
+                     "set "
+                     "IS_FAVORITE = :is_favorite,"
+                     "NUM_FAVORITE = :num_favorite "
+                     "where id_channel = :id_channel ");
+    q_modify.bindValue(":id_channel", idChannel);
+    q_modify.bindValue(":is_favorite", isFavorite);
+    int numFav {};
+    if (isFavorite)
+        numFav = getMaxNumFavorite(idPlaylist) + 1;
+    q_modify.bindValue(":num_favorite", numFav);
+
+    if (q_modify.exec()) {
+        save();
+        q_modify.finish();
+        emit sendFavoriteResult(index, idChannel, numFav);
+    }
 }
 
 void ChannelGW::deleteRecord(const int &index, const int &idChannel)
 {
-    DBst::getInstance().startTransDB();
+    DBst::getInstance().startTransDBdef();
     q_delete = QSqlQuery(DBst::getInstance().db_def());
     q_delete.prepare("delete from CHANNELS where id_channel = :id_channel ");
     q_delete.bindValue(":id_channel", idChannel);
 
-    DBst::getInstance().execAndCheck(q_delete).then([this, idChannel, index](bool result) {
-        if (result) {
+//    DBst::getInstance().execAndCheck(q_delete).then([this, idChannel, index](bool result) {
+//        if (result) {
+    if (q_delete.exec()) {
             save();
             q_delete.finish();
             emit deleted(index, idChannel);
         }
-    });
+//    });
 }
 
 void ChannelGW::deleteAllInFile(const int &index, const int &idFile)
 {
-    DBst::getInstance().startTransDB();
+    DBst::getInstance().startTransDBdef();
     q_delete = QSqlQuery(DBst::getInstance().db_def());
     q_delete.prepare("delete from CHANNELS where id_file = :id_file ");
     q_delete.bindValue(":id_file", idFile);
 
-    DBst::getInstance().execAndCheck(q_delete).then([this, idFile, index](bool result) {
-        if (result) {
+//    DBst::getInstance().execAndCheck(q_delete).then([this, idFile, index](bool result) {
+//        if (result) {
+    if (q_delete.exec()) {
             save();
             q_delete.finish();
-            emit deletedAllInFile(index, idFile);
+            emit deletedAllInFile(idFile);
         }
-    });
+//    });
 }
 
 void ChannelGW::deleteAllInPlaylist(const int &index, const int &idPlaylist)
 {
-    DBst::getInstance().startTransDB();
+    DBst::getInstance().startTransDBdef();
     q_delete = QSqlQuery(DBst::getInstance().db_def());
     q_delete.prepare("delete from CHANNELS where id_playlist = :id_playlist ");
     q_delete.bindValue(":id_file", idPlaylist);
 
-    DBst::getInstance().execAndCheck(q_delete).then([this, idPlaylist, index](bool result) {
-        if (result) {
+//    DBst::getInstance().execAndCheck(q_delete).then([this, idPlaylist, index](bool result) {
+//        if (result) {
+    if (q_delete.exec()) {
             save();
             q_delete.finish();
             emit deletedAllInPlaylist(index, idPlaylist);
         }
-    });
+//    });
 }
 
 void ChannelGW::getNums(const int &index, const int &idPlaylist, const int &idFile)
 {
-    int maxNumFile = getNumFile(idPlaylist, idFile);
     int maxNumPlaylist = getNumPlaylist(idPlaylist);
 
-    emit numsRecieved(index, idPlaylist, idFile, maxNumPlaylist, maxNumFile);
-}
-
-int ChannelGW::getNumFile(const int &idPlaylist, const int &idFile)
-{    
-    DBst::getInstance().startTransDB();
-//    q_temp.clear();
-    q_temp = QSqlQuery(DBst::getInstance().db_def());
-    q_temp.prepare("select coalesce(max(channels.NUM_FILE), 0) max_num "
-                   "from channels "
-                   "where channels.ID_FILE = :id_file "
-                   "and channels.ID_PLAYLIST = :id_playlist ");
-    q_temp.bindValue(":id_file", idFile);
-    q_temp.bindValue(":id_playlist", idPlaylist);
-    qDebug() << "getNumFile: willExec";
-    try {
-//        QFuture<QSqlQuery> future = DBst::getInstance().execAndGetQuery(q_temp);
-//        try {
-//        q_temp = future.result();
-//        } catch (...) {
-//            qDebug() << "";
-//        }
-        if (q_temp.exec()) {
-            qDebug() << "getNumFile: execed";
-            q_temp.first();
-            int maxNumFile {};
-            if (q_temp.isValid())
-                maxNumFile = q_temp.value(0).toInt();
-            q_temp.finish();
-            return maxNumFile;
-        } else {
-            qDebug() << "channelGW::getNumFile error: " << q_temp.lastError();
-        }
-    } catch (...) {
-        qDebug() << "error: " << q_temp.lastError();;
-    }
-    return 0;
+    emit numsRecieved(index, idPlaylist, idFile, maxNumPlaylist);
 }
 
 int ChannelGW::getNumPlaylist(const int &idPlaylist)
 {    
-    DBst::getInstance().startTransDB();
+    DBst::getInstance().startTransDBdef();
     q_temp = QSqlQuery(DBst::getInstance().db_def());
     q_temp.clear();
     q_temp.prepare("select coalesce(max(channels.NUM_PLAYLIST), 0) max_num "
@@ -269,91 +308,6 @@ void ChannelGW::prepareInsert()
     m_isPreparedForInsert = true;
 }
 
-void ChannelGW::addForInsert(const int &index, const QString &naim, const QString &url, const int &idFile,
-                             const int &idPlaylist, const int &idCategory, const int &numFile, const int &numPlaylist,
-                             const int &archDays, const int &idLogo, const bool &generateNums)
-{
-    qDebug() << "channelGW: insert: " << naim;
-    if (!m_isPreparedForInsert) {
-        prepareInsert();
-        m_newId = getMaxId() + 1;
-        if (generateNums) {
-            m_maxNumFile = getNumFile(idPlaylist, idFile) + 1;
-            m_maxNumPlaylist = getNumPlaylist(idPlaylist) + 1;
-        } else {
-            m_maxNumFile = numFile;
-            m_maxNumPlaylist = numPlaylist;
-        }
-    } else {
-        m_newId++;
-        if (generateNums) {
-            m_maxNumFile++;
-            m_maxNumPlaylist++;
-        } else {
-            m_maxNumFile = numFile;
-            m_maxNumPlaylist = numPlaylist;
-        }
-    }
-    QString s_idLogo;
-    if (idLogo == 0) {
-        s_idLogo = "NULL";
-    } else {
-        s_idLogo = QString::number(idLogo);
-    }
-
-    qDebug() << "channelGW: inserted: " << naim;
-//    m_insertText += QString("insert into CHANNELS "
-//                    "(ID_CHANNEL, NAIM, URL, ID_FILE, ID_PLAYLIST, ID_CATEGORY, NUM_FILE, NUM_PLAYLIST, ARCH_DAYS, ID_LOGO) "
-//                    "values (%1, ''%2'', ''%3'', %4, %5, %6, %7, %8, %9, %10); ")
-//            .arg(newId)
-//            .arg(naim)
-//            .arg(url)
-//            .arg(idFile)
-//            .arg(idPlaylist)
-//            .arg(idCategory)
-//            .arg(maxNumFile)
-//            .arg(maxNumPlaylist)
-//            .arg(archDays)
-//            .arg(idLogo);
-    m_insertText += QString("insert into CHANNELS "
-                    "(ID_CHANNEL, ID_FILE, ID_PLAYLIST, ID_CATEGORY, NUM_FILE, NUM_PLAYLIST, ARCH_DAYS, ID_LOGO) "
-                    "values (%1, %4, %5, %6, %7, %8, %9, %10); ")
-            .arg(m_newId)
-            .arg(idFile)
-            .arg(idPlaylist)
-            .arg(idCategory)
-            .arg(m_maxNumFile)
-            .arg(m_maxNumPlaylist)
-            .arg(archDays)
-            .arg(s_idLogo);
-
-    emit inserted(index, m_newId, m_maxNumFile, m_maxNumPlaylist, idFile, idPlaylist);
-}
-
-void ChannelGW::saveInsert()
-{
-    if (!m_insertText.isEmpty()) {
-        m_insertText += "COMMIT; ";
-        DBst::getInstance().startTransDB();
-        q_insert = QSqlQuery(DBst::getInstance().db_def());
-        m_insertText = "insert into CHANNELS (ID_CHANNEL, ID_FILE, ID_PLAYLIST, ID_CATEGORY, NUM_FILE, NUM_PLAYLIST, ARCH_DAYS, ID_LOGO) values (331, 47, 2, 2, 331, 331, 0, NULL); insert into CHANNELS (ID_CHANNEL, ID_FILE, ID_PLAYLIST, ID_CATEGORY, NUM_FILE, NUM_PLAYLIST, ARCH_DAYS, ID_LOGO) values (332, 47, 2, 2, 332, 332, 0, NULL)";
-        q_insert.prepare(m_insertText);
-        qDebug() << "will exec: " << m_insertText;
-//        m_insertText = "insert into CHANNELS (ID_CHANNEL, ID_FILE, ID_PLAYLIST, ID_CATEGORY, NUM_FILE, NUM_PLAYLIST, ARCH_DAYS, ID_LOGO) values (331, 47, 2, 2, 331, 331, 0, NULL); insert into CHANNELS (ID_CHANNEL, ID_FILE, ID_PLAYLIST, ID_CATEGORY, NUM_FILE, NUM_PLAYLIST, ARCH_DAYS, ID_LOGO) values (332, 47, 2, 2, 332, 332, 0, NULL)";
-        if (q_insert.exec()) {
-//        DBst::getInstance().execAndCheck(q_insert).then([this](bool result) {
-//            if (result) {
-                save();
-                m_isPreparedForInsert = false;
-                q_insert.finish();
-                qDebug() << "channelGW: inserted: commited";
-            } else {
-            qDebug() << "error: " << q_insert.lastError();
-        }
-//        });
-    }
-}
-
 void ChannelGW::calcRowCount()
 {
     m_rows = 0;
@@ -368,7 +322,7 @@ void ChannelGW::calcRowCount()
 
 int ChannelGW::getMaxId()
 {
-    DBst::getInstance().startTransDB();
+    DBst::getInstance().startTransDBdef();
     q_temp = QSqlQuery(DBst::getInstance().db_def());    
     q_temp.prepare("select coalesce(max(channels.id_channel),0) max_id from channels ");
     try {
@@ -389,6 +343,33 @@ int ChannelGW::getMaxId()
             return maxId;
         } else {
             qDebug() << "channelGW::getMaxId error: " << q_temp.lastError();
+        }
+    } catch (...) {
+        qDebug() << "error getMaxId: " << q_temp.lastError();
+    }
+    return 0;
+}
+
+int ChannelGW::getMaxNumFavorite(const int &idPlaylist)
+{
+    DBst::getInstance().startTransDBdef();
+    q_temp = QSqlQuery(DBst::getInstance().db_def());
+    q_temp.clear();
+    q_temp.prepare("select coalesce(max(channels.num_favorite),0) max_num_favorite "
+                   "from channels "
+                   "where channels.id_playlist = :id_playlist ");
+    q_temp.bindValue(":id_playlist", idPlaylist);
+    try {
+        if (q_temp.exec()) {
+            q_temp.first();
+            int maxNum {};
+            if (q_temp.isValid())
+                maxNum = q_temp.value(0).toInt();
+            qDebug() << "maxNumFav: " << maxNum;
+            q_temp.finish();
+            return maxNum;
+        } else {
+            qDebug() << "channelGW::getMaxNumFavorite error: " << q_temp.lastError();
         }
     } catch (...) {
         qDebug() << "error getMaxId: " << q_temp.lastError();

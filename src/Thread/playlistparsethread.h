@@ -6,6 +6,8 @@
 #include <QString>
 #include <QMutex>
 
+#include <queue>
+
 #include "./Classes/additional.h"
 #include "./Classes/channel.h"
 #include "./Gateways/categorygw.h"
@@ -26,14 +28,13 @@ public:
 signals:
     void channelParsed(Channel &channel, const int &idPlaylist, const int &idFile, const QString &naim);
     void findCategoryId(QString &groupName, const int &idPlaylist, const int &idFile);
-    void fullyParsed();
+    void fullyParsed(const int &idPlaylist, const int &idFile);
 //    void finished();
 
 public slots:
-    void setCategoryId(const int &idCategory, const int &idPlaylist, const int &idFile);
     void pushOutCurChannel();
-
     void setPauseParsing(const bool &isPausing);
+    void deleteFrontChannel();
 
 private:
     QString m_filePath {};
@@ -48,6 +49,7 @@ private:
     Channel m_outChannel;
     CategoryGW m_catGW;
     QMutex m_mutex;
+    std::queue< Channel > m_channels;
 
     void parseFile();
     void parseLine(QString &line);

@@ -19,7 +19,7 @@ public:
 
     void run() override;
 
-    void copyFile(const int &index, const QUrl &filePath, QString &newFilePath);
+    void copyFile(const int &index, const QUrl &filePath, QString &newFilePath, const bool &checkExtension);
     void refreshFile(const int &index, const QUrl &filePath, QString &newFilePath);
 
 

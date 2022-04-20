@@ -12,40 +12,56 @@ Item {
     anchors.fill: parent
     anchors.leftMargin: 3
     anchors.rightMargin: 3
-    ColumnLayout {
-        anchors.fill: parent
+    RowLayout {
+//        anchors.fill: parent
+        Layout.fillHeight: true
+        Layout.fillWidth: true
         spacing: 1
         z: -1
 
-        PlaylistManagerToolbar {
-            id: toolbar
-            Layout.preferredHeight: 30
-            Layout.minimumHeight: 30
-            Layout.fillWidth: true
-            z: 0
-        }
-
-
-        LViews.PlaylistsView {
-            id: plView
-            Layout.fillWidth: true
+        ColumnLayout {
             Layout.fillHeight: true
-            Layout.minimumHeight: 200
-            //        onIndexChanged : toolbar.curIndex = currentIndex
-            onCurIndexChanged: toolbar.curIndex = plView.curIndex
-        }
-        LViews.PlFilesView {
-            id: files
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            Layout.minimumHeight: 200
-//            Layout.preferredHeight: parent.height / 2
-
-        }
-//        Rectangle {
-//            id: fillerRect
-//            Layout.fillHeight: true
 //            Layout.fillWidth: true
-//        }
+            Layout.minimumWidth: plMngLists.width * 0.4
+            spacing: 1
+            z: -1
+
+            PlaylistManagerToolbar {
+                id: toolbar
+                Layout.minimumHeight: 30
+                Layout.maximumHeight: 30
+                Layout.fillWidth: true
+                toolbar_height: 30
+                z: 0
+            }
+
+
+            LViews.PlaylistsView {
+                id: plView
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.minimumHeight: 200
+                //        onIndexChanged : toolbar.curIndex = currentIndex
+                onCurIndexChanged: toolbar.curIndex = plView.curIndex
+            }
+            LViews.PlFilesView {
+                id: files
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.minimumHeight: 200
+                //            Layout.preferredHeight: parent.height / 2
+
+            }
+            //        Rectangle {
+            //            id: fillerRect
+            //            Layout.fillHeight: true
+            //            Layout.fillWidth: true
+            //        }
+        }
+        LViews.ChannelsView {
+            id: _view_channels
+            Layout.minimumWidth: plMngLists.width * 0.6
+            Layout.minimumHeight: plMngLists.height
+        }
     }
 }

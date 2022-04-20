@@ -17,21 +17,13 @@ Settings::Settings(const Settings &value, QObject *parent) : QObject(parent)
 //    *this = value;
 }
 
-//Settings::Settings(const QSqlDatabase &db) : m_db(db)
-//{
-////    SetsThread m_setsThr {m_db};
-////    m_setsThr.start();
-//    getSets();
-//}
-
 Settings::~Settings()
 {
-//    m_setsThr.quit();
-//    m_setsThr.wait();
+
 }
 
 QString Settings::appPath()
-{
+{    
     if (m_appPath.trimmed() == "")
         getSets();
     return m_appPath;
@@ -65,10 +57,12 @@ void Settings::setCurPlDir(const QString &value)
     getSets();
 }
 
-//void Settings::setDB(const QSqlDatabase &value)
-//{
-//    m_db = value;
-//}
+QString &Settings::logoPath()
+{
+    if (m_logoPath.trimmed() == "")
+        this->getSets();
+    return m_logoPath;
+}
 
 void Settings::countRows()
 {
@@ -82,108 +76,71 @@ void Settings::countRows()
 
 void Settings::getSets()
 {
-    if (DBst::getInstance().isDbThrOpened()) {        
+//    if (DBst::getInstance().isDbThrOpened()) {
         q_select = QSqlQuery(DBst::getInstance().db_def());
-        q_select.prepare("select settings.app_dir, settings.current_pl_dir, settings.id_sets from settings ");
+        q_select.prepare("select settings.app_dir, settings.current_pl_dir, settings.id_sets, settings.logo_path from settings ");
 
-        QFuture<QSqlQuery> future = DBst::getInstance().execAndGetQuery(q_select);
-//        future.waitForFinished();
-        qDebug() << "";
+//        QFuture<QSqlQuery> future = DBst::getInstance().execAndGetQuery(q_select);
+//        qDebug() << "";
 //        future.then([this](QSqlQuery query) {
 //            q_select = query;
 //        });
-        q_select = future.result();
+//        q_select = future.result();
 //        qDebug() << " ";
-//        DBst::getInstance().execAndGetQuery(q_select).then([this](QSqlQuery query) {
-//            q_select = query;
-//            getSetsContinuation();
-//        });
-
+        q_select.exec();
         countRows();
         m_appPath = "";
         m_curPlDir = "";
-        q_select.first();
-        if (m_rows > 0) {
+        q_select.first();                
+        if (m_rows > 0) {            
             m_appPath = q_select.value("app_dir").toString();
             m_curPlDir = q_select.value("current_pl_dir").toString();
-            m_id = q_select.value("id_sets").toInt();
+            m_id = q_select.value("id_sets").toInt();            
+            m_logoPath = q_select.value("logo_path").toString();
         }
-
-//        DBst::getInstance().execAndGetQuery(q_select).then([this](QSqlQuery query) {
-//            qDebug() << "setsGetted";
-//            q_select = query;
-//            countRows();
-//            m_appPath = "";
-//            m_curPlDir = "";
-//            q_select.first();
-//            if (m_rows > 0) {
-//                m_appPath = q_select.value("app_dir").toString();
-//                m_curPlDir = q_select.value("current_pl_dir").toString();
-//                m_id = q_select.value("id_sets").toInt();
-//                qDebug() << "getSets rows>0: m_appPath" << m_appPath << " m_curPlDIr: " << m_curPlDir << " m_id: " << m_id;
-//            }
-//        });
-    }
-//    q_select.exec();
-//    countRows();
-//    m_appPath = "";
-//    m_curPlDir = "";
-//    q_select.first();
-//    if (m_rows > 0) {
-//        m_appPath = q_select.value("app_dir").toString();
-//        m_curPlDir = q_select.value("current_pl_dir").toString();
-//        m_id = q_select.value("id_sets").toInt();
+        q_select.finish();
 //    }
 }
 
 void Settings::modifySets()
 {
-    qDebug() << "sets modify: " << m_appPath << " curPlDir: " << m_curPlDir << " id_sets: " << m_id;
+//    qDebug() << "sets modify: " << m_appPath << " curPlDir: " << m_curPlDir << " id_sets: " << m_id;
     q_temp = QSqlQuery(DBst::getInstance().db_def());
     q_temp.prepare("update settings "
                     "set app_dir = :app_dir, "
-                    "current_pl_dir = :current_pl_dir "
+                    "current_pl_dir = :current_pl_dir, "
+                    "logo_path = :logo_path "
                     "where id_sets = :id_sets ");
     q_temp.bindValue(":app_dir", m_appPath);
     q_temp.bindValue(":current_pl_dir", m_curPlDir);
     q_temp.bindValue(":id_sets", m_id);
+    q_temp.bindValue(":logo_path", m_logoPath);
     q_temp.exec();
-    DBst::getInstance().execAndCheck(q_temp).then([this](bool result) {
-        if (result)
+//    DBst::getInstance().execAndCheck(q_temp).then([this](bool result) {
+//        if (result)
+    DBst::getInstance().commitDbDef();
             q_temp.finish();
-    });
-
-//    m_setsThr.modify(m_appPath, m_curPlDir);
-
-//    q_temp = QSqlQuery(m_db);
-//    q_temp.prepare("update settings "
-//                    "set app_dir = :app_dir, "
-//                    "current_pl_dir = :current_pl_dir "
-//                    "where id_sets = :id_sets ");
-//    q_temp.bindValue(":app_dir", m_appPath);
-//    q_temp.bindValue(":current_pl_dir", m_curPlDir);
-//    q_temp.bindValue(":id_sets", m_id);
-//    q_temp.exec();
-//    qDebug() << "sets modify ended";
-//    q_temp.finish();
+//    });
 }
 
 void Settings::insertSets()
 {
-    qDebug() << "insertSets";
+//    qDebug() << "insertSets";
 //    q_temp = QSqlQuery(m_db);
     q_temp = QSqlQuery(DBst::getInstance().db_def());
     q_temp.prepare("insert into SETTINGS "
-                    "(app_dir, current_pl_dir) "
-                    "values (:app_dir, :current_pl_dir) ");
+                    "(app_dir, current_pl_dir, logo_path) "
+                    "values (:app_dir, :current_pl_dir, :logo_path) ");
     q_temp.bindValue(":app_dir", m_appPath);
     q_temp.bindValue(":current_pl_dir", m_curPlDir);
-    DBst::getInstance().execAndCheck(q_temp).then([this](bool result) {
-        if (result)
-            q_temp.finish();
-    });
-//    q_temp.exec();
-    //    q_temp.finish();
+    q_temp.bindValue(":logo_path", m_logoPath);
+//    DBst::getInstance().execAndCheck(q_temp).then([this](bool result) {
+//        if (result)
+//            q_temp.finish();
+//    });
+    q_temp.exec();
+    DBst::getInstance().commitDbDef();
+    q_temp.finish();
 }
 
 void Settings::getSetsContinuation()
@@ -196,26 +153,6 @@ void Settings::getSetsContinuation()
         m_appPath = q_select.value("app_dir").toString();
         m_curPlDir = q_select.value("current_pl_dir").toString();
         m_id = q_select.value("id_sets").toInt();
+        m_logoPath  = q_select.value("logo_path").toString();
     }
-}
-
-void Settings::modifyThr(QString &appPath, QString &curPlDir)
-{
-    qDebug() << "sets modifyThr";
-//    q_temp = QSqlQuery(m_db);
-    q_temp = QSqlQuery(DBst::getInstance().db_def());
-    q_temp.prepare("update settings "
-                    "set app_dir = :app_dir, "
-                    "current_pl_dir = :current_pl_dir "
-                    "where id_sets = :id_sets ");
-    q_temp.bindValue(":app_dir", appPath);
-    q_temp.bindValue(":current_pl_dir", curPlDir);
-    q_temp.exec();
-    DBst::getInstance().execAndCheck(q_temp).then([this](bool result) {
-        qDebug() << "sets modify ended";
-        if (result)
-            q_temp.finish();
-    });
-
-//    q_temp.finish();
 }

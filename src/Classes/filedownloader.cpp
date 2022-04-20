@@ -1,15 +1,17 @@
 #include "filedownloader.h"
 
 #include <QSslError>
+#include <QDataStream>
 FileDownloader::FileDownloader()
 {
     connect(&manager, &QNetworkAccessManager::finished, this, &FileDownloader::downloadFinished);
 }
 
 void FileDownloader::doDownload(QString &newPath, const int &index, QString &fullFilePath, const QString &extension,
-                                const bool &isValid, const int &idFormat)
+                                const bool &isValid, const int &idFormat, const bool &isAppend)
 {
     if (isValid) {
+//        qDebug() << "new: " << newPath << " file: " << fullFilePath;
         m_newPath = newPath;
         QFileInfo fInf(fullFilePath);
         m_fName = fInf.fileName();
@@ -20,6 +22,7 @@ void FileDownloader::doDownload(QString &newPath, const int &index, QString &ful
         m_extension = extension;
         m_idFormat = idFormat;
         m_fullFilePath = fullFilePath;
+        m_isAppend = isAppend;
 
         QNetworkRequest request(url);
         QNetworkReply *reply = manager.get(request);
@@ -32,42 +35,50 @@ void FileDownloader::doDownload(QString &newPath, const int &index, QString &ful
 }
 
 bool FileDownloader::saveFileName()
-{
+{    
     m_file.setFileName(m_newPath);
-    if (m_file.exists()) {
+    if (!m_isAppend && m_file.exists()) {
         if (!m_file.remove()) {
             m_errorMsg = "Error! Cannot delete existing old playlist file from local directory.";
             m_isAvailable = false;
             emit error(m_errorMsg, m_fName, m_fullFilePath, m_newPath, m_extension, m_idFormat, m_isAvailable, m_index);
             return false;
         }
-    } else {
-        QDir newDir;
-        QFileInfo fInf(m_newPath);
-        if (newDir.mkpath(fInf.absolutePath())) {
-            return true;
-        }
     }
+    m_file.close();
+    QDir newDir;
+    QFileInfo fInf(m_newPath);
+    if (newDir.mkpath(fInf.absolutePath()))
+        return true;
     return true;
 }
 
 bool FileDownloader::saveToDisk(const QString &filename, QIODevice *data)
 {
     QFile file(filename);
-    if (!file.open(QIODevice::WriteOnly)) {
-        m_errorMsg = "Could not open " + filename + " for writing: " + file.errorString();
-        qDebug() << m_errorMsg;
+    m_errorMsg.clear();
+    if (m_isAppend) {
+        if (!file.open(QIODevice::Append))
+            m_errorMsg = "Could not open " + filename + " for writing: " + file.errorString();
+    } else {
+        if (!file.open(QIODevice::WriteOnly))
+            m_errorMsg = "Could not open " + filename + " for writing: " + file.errorString();
+    }
+    if (m_errorMsg.isEmpty()) {
+        if (file.isOpen())
+            file.write(data->readAll());
+        file.close();
+        qDebug() << "Download of " << m_fullFilePath << " succeeded (saved to " << m_newPath << ")";
+        emit fileDownloaded(m_fName, m_fullFilePath, m_newPath, m_extension, m_idFormat, m_isAvailable, m_index);
+
+        return true;
+    } else {
+        qDebug() << "Downloading error: " << m_errorMsg;
         m_isAvailable = false;
         emit error(m_errorMsg, m_fName, m_fullFilePath, m_newPath, m_extension, m_idFormat, m_isAvailable, m_index);
 
         return false;
     }
-
-    file.write(data->readAll());
-    file.close();
-    emit fileDownloaded(m_fName, m_fullFilePath, m_newPath, m_extension, m_idFormat, m_isAvailable, m_index);
-
-    return true;
 }
 
 bool FileDownloader::isHttpRedirect(QNetworkReply *reply)
@@ -78,23 +89,23 @@ bool FileDownloader::isHttpRedirect(QNetworkReply *reply)
 }
 
 void FileDownloader::downloadFinished(QNetworkReply *reply)
-{
+{    
     QUrl url = reply->url();
     if (reply->error()) {
         m_errorMsg = "Download of " + QString::fromLatin1(url.toEncoded().constData()) + " failed: " + reply->errorString();
         qDebug() << m_errorMsg;
         m_isAvailable = false;
         emit error(m_errorMsg, m_fName, m_fullFilePath, m_newPath, m_extension, m_idFormat, m_isAvailable, m_index);
-    } else {
+    } else {        
         if (isHttpRedirect(reply)) {
             m_errorMsg = tr("Request was redirected.");
             qDebug() << m_errorMsg;
             m_isAvailable = false;
             emit error(m_errorMsg, m_fName, m_fullFilePath, m_newPath, m_extension, m_idFormat, m_isAvailable, m_index);
-        } else {
+        } else {            
             if (saveFileName()) {
                 if (saveToDisk(m_newPath, reply)) {
-                    qDebug() << "Download of " << url.toEncoded().constData() << " succeeded (saved to " << m_newPath << ")";
+//                    qDebug() << "Download of " << url.toEncoded().constData() << " succeeded (saved to " << m_newPath << ")";
                 }
             }
         }
