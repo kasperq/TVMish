@@ -25,7 +25,7 @@ int ChannelGW::rows() const
     return m_rows;
 }
 
-void ChannelGW::select(const int &idPlaylist, const int &idFile)
+void ChannelGW::select(const int &idPlaylist, const int &idFile, const bool &isFavorite)
 {    
     DBst::getInstance().startTransDBdef();
     q_select = QSqlQuery(DBst::getInstance().db_def());
@@ -40,14 +40,21 @@ void ChannelGW::select(const int &idPlaylist, const int &idFile)
                "left join category on category.ID_CATEGORY = channels.ID_CATEGORY "
                "left join logos on logos.ID_LOGO = channels.ID_LOGO "
                "where channels.ID_PLAYLIST = :id_playlist ";
-
+//    queryStr += "and channels.ID_CHANNEL = 2832 ";
     if (idFile != 0)
         queryStr += "and channels.ID_FILE = :id_file ";
     if (!m_filterNaim.isEmpty())
         queryStr += "and trim(channels.NAIM_LOWER) like trim(\"%" + m_filterNaim +"%\") ";
     if (m_idCategory != 0)
-        queryStr += "and channels.ID_CATEGORY = " + QString::number(m_idCategory) + " ";
-    queryStr += "order by iif(coalesce(channels.is_favorite, false) = true, channels.num_favorite, channels.num_playlist) ";
+        queryStr += "and channels.ID_CATEGORY = " + QString::number(m_idCategory) + " ";    
+    if (isFavorite) {
+        queryStr += "and coalesce(channels.IS_FAVORITE, false) = true "
+                    "order by channels.num_favorite ";
+    } else {
+        queryStr += "and coalesce(channels.IS_FAVORITE, false) = false "
+                    "order by channels.num_playlist";
+    }
+//    queryStr += "order by iif(coalesce(channels.is_favorite, false) = true, channels.num_favorite, channels.num_playlist) ";
 
     q_select.prepare(queryStr);
     q_select.bindValue(":id_playlist", idPlaylist);
@@ -61,8 +68,8 @@ void ChannelGW::select(const int &idPlaylist, const int &idFile)
         calcRowCount();
     } else {
         qDebug() << "channelGW::select error: " << q_select.lastError();
-    }
-    emit selected(idPlaylist, idFile);
+    }    
+    emit selected(idPlaylist, idFile, isFavorite);
 }
 
 void ChannelGW::selectWithFilter(const int &idPlaylist, const int &idFile, const QString &filterNaim, const int &idCategory)
@@ -70,7 +77,7 @@ void ChannelGW::selectWithFilter(const int &idPlaylist, const int &idFile, const
 //    qDebug() << "ChannelGW::selectWithFilter: idPl: " << idPlaylist << " idF: " << idFile << " fil: " << filterNaim;
     m_filterNaim = filterNaim;
     m_idCategory = idCategory;
-    select(idPlaylist, idFile);
+    select(idPlaylist, idFile, true);
 }
 
 void ChannelGW::insert(const int &index, const QString &naim, const QString &url, const int &idFile, const int &idPlaylist,

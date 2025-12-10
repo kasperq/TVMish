@@ -35,6 +35,7 @@ void PlaylistGW::select(const bool &isCurrent)
         q_select.first();
         if (q_select.isValid())
             idPlaylist = q_select.value("id_playlist").toInt();
+        qDebug() << "current id_playlist: " << idPlaylist;
     }
     calcRowCount();
 

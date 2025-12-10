@@ -1,0 +1,21 @@
+-rework Player to QtAVPlayer
+    -rework smallscreen player
+    -rework fullscreen player
+        -add selecting groups and channels list
+            -add preview videoitem to channels list
+-rework fullscreen/smallscreen modes
+-fixes starting with empty playlists
+-fix deleting playlist (channels don't delete)
+-add DB creator
+-fix opening categories after filter
+
+-add wishlist (something like favorites)
+-add doxygen
+-add TV schedule manager
+-add archieve manager
+-add tests
+
+-adopt interface to android devices
+    -tvbox
+    -tablet
+    -phone

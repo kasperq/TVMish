@@ -118,11 +118,11 @@ private:
     FileDownloader m_fileLoader;
 
 
-    QString m_fileName;
+    QString m_fileName {};
     QStringList m_filesName;
-    int m_idPlaylist;
-    QString m_curDir;
-    int m_curIdFile;
+    int m_idPlaylist {};
+    QString m_curDir {};
+    int m_curIdFile {};
 
     QEventLoop m_eventLoop;
 

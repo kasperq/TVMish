@@ -1,6 +1,7 @@
 #include "dbconnpool.h"
 
 #include <QDebug>
+#include <qapplication.h>
 
 QMutex DBConnPool::m_mutex;
 QAtomicPointer<DBConnPool> DBConnPool::m_instance = nullptr;
@@ -111,7 +112,7 @@ DBConnPool::DBConnPool()
 #ifdef QT_DEBUG
     fileName = "d:/Projects/qt/TVmish/db/TVDB.db3";
 #else
-    fileName = QGuiApplication::applicationDirPath().toStdString() + "/TVDB.db3";
+    fileName = QApplication::applicationDirPath() + "/TVDB.db3";
 #endif
     dbFile.setFileName(fileName);
     if (!dbFile.exists()) {

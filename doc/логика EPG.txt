@@ -1,0 +1,44 @@
+epg
+	-id_epg - epg_code
+	-time_start
+	-time_end
+	-timeshift
+	-title
+	-desctription
+	-icon
+	-category
+	-age_rating
+	
+-скачиваем файлы	
+-проходим по файлу
+	- берем channel_id, заносим если нету в LOGOS и EPG_KART
+	- icon_src заносим в LOGOS и скачиваем лого
+	- display-name заносим в LOGOS как CHANNEL_NAME
+	
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE tv SYSTEM "http://epg.it999.ru/xmltv.dtd">
+<tv source-info-url="http://epg.it999.ru" source-info-name="EPG it999" source-info-logo="http://epg.it999.ru/images/logo100x100.png" generator-info-name="EPG it999 generator xmltv v2.1" generator-info-url="http://it999.ru">	
+	
+	
+<channel id="5901">
+	<display-name lang="ru">Наш Спорт 10 HD</display-name>
+	<icon src="http://epg.it999.ru/img2/5901.png" />
+</channel>
+	
+	
+<programme start="20220514033000 +0300" stop="20220514043000 +0300" channel="4458">
+	<title lang="ru">Новости 360</title>
+	<desc lang="ru">Информация, Россия
+Все новости страны и региона - девять раз в день. В эфире широко представлены политические, экономические и культурные события, которые произошли в Москве и Московской области</desc>
+	<category lang="ru">Новости</category>
+	<rating system="RU"><value>12+</value></rating>	
+</programme>	
+
+
+
+<channel id="2710">
+	<display-name lang="he">Entertainment IL</display-name>
+	<display-name lang="he">HOT ENTERTAINMENT HD IL</display-name>
+	<display-name lang="he">Hot BBC Entertainment IL</display-name>
+	<icon src="http://epg.it999.ru/img/2710.png" />
+</channel>
+

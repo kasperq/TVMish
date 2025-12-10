@@ -1,0 +1,62 @@
+MainController
+-загружает QML MainForm
+-public slots для обращения из MainToolbar
+	-openTvMode
+	-openOptions
+	-openPlaylistManager
+	-openTvSchedule
+	-choosePlaylist
+	
+Формы
+-MainForm
+	-MainToolbar
+		-PlayListLookup
+	-TVForm
+		-PlaylistPlayMenu
+	-PlaylistManagerForm
+		
+
+	
+	
+Playlist
+	-id_playlist
+	-naim
+	-is_current
+	
+Playlist_File
+	-id_file
+	-id_playlist
+	-file_name
+	-file_path
+	-file_path_loca
+	-id_format
+	
+Channel
+	-id_channel
+	-id_file
+	-naim
+	-url
+	-archive
+	-id_group
+	-logo
+	-num
+	-is_favorite
+	
+Channel_Group
+	-id_group
+	-naim
+Favorite_Chanels
+	-id
+	-id_playlist
+	-id_channel
+	-num
+	
+	
+tvg-id - channel code from EPG code table
+tvg-name - channel name from EPG code table
+group-title - channel group
+parent-code - group parent code
+audio-track - ISO 639-1 audio track code (LG only, see codes table)
+tvg-logo - path to the big channel logo, minimum height should be 48px
+tvg-logo-small - path to the small square channel logo, min height should be 48px (works in the latest app versions only)
+timeshift, tvg-rec - timeshift availability for specific channel in days

@@ -17,23 +17,29 @@ Page {
         Lists.CategoryChannelView {
             id: _listView_catCh
             Layout.fillHeight: true
-            Layout.maximumWidth: parent.width / 3
-            Layout.minimumWidth: parent.width / 4
+            Layout.maximumWidth: parent.width / 8
+            Layout.minimumWidth: parent.width / 10
         }
         ColumnLayout {
             Layout.fillHeight: true
             Layout.fillWidth: true
-            Elements.PlayerMiniForm {
-                id: _miniPlayer
-                Layout.fillWidth: true
+            Elements.VideoTile {
+                id: _tile
                 Layout.fillHeight: true
+                Layout.fillWidth: true
             }
 
-            Lists.ScheduleView {
-                id: _listView_schedule
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-            }
+            // Elements.PlayerMiniForm {
+            //     id: _miniPlayer
+            //     Layout.fillWidth: true
+            //     Layout.fillHeight: true
+            // }
+
+            // Lists.ScheduleView {
+            //     id: _listView_schedule
+            //     Layout.fillWidth: true
+            //     Layout.fillHeight: true
+            // }
         }
     }
 

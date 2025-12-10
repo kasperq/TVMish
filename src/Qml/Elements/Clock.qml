@@ -17,7 +17,7 @@ Rectangle {
     Label {
         id: lbl_time
         anchors.fill: parent
-        text: curTime
+        text: "1_" + curTime
 
         color: "white"
         wrapMode: Text.Wrap

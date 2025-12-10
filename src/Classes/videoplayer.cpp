@@ -2,11 +2,9 @@
 
 #include <QFile>
 #include <QTextStream>
-#include <QIODevice>
+
 #include <QDebug>
 #include <QDir>
-
-#include <QtMultimedia/QMediaMetaData>
 
 VideoPlayer::VideoPlayer(QObject *parent)
     : QObject{parent}
@@ -22,6 +20,7 @@ VideoPlayer::~VideoPlayer()
 void VideoPlayer::initConnections()
 {
     connect(&m_fileLoader, &FileDownloader::error, this, &VideoPlayer::channelUnavailable);
+    // after m3u file was downloaded we should parse it to get URLs to video files
     connect(&m_fileLoader, &FileDownloader::fileDownloaded, this, &VideoPlayer::parseChannelPlaylist);
 //    connect(&m_timer, &QTimer::timeout, this, &VideoPlayer::play);
     connect(&m_timer, &QTimer::timeout, this, [=]() {
@@ -37,12 +36,18 @@ void VideoPlayer::setSets(const Settings &value)
     m_sets = std::make_shared< Settings > (value);
 }
 
-void VideoPlayer::playChannel(QUrl &channelUrl, const bool &fromBeginning)
+void VideoPlayer::playChannel(QUrl channelUrl, const bool &fromBeginning)
 {
     qDebug() << "VideoPlayer::playChannel: " << channelUrl;
     m_curChannelUrl = QUrl(channelUrl);
+    // if we are going to play live stream then we should stop download of the channel files and pause playing current channel
+    // then delete all downloaded files
     if (fromBeginning) {
-        emit stopPlaying();
+        m_isPauseDownload = true;
+        if (m_isFullScreen)
+            emit stopPlayingPlayer();
+        else
+            emit stopPlayingMiniPlayer();
         QDir dir(m_sets->appPath() + "/temp/current_channel/");
         dir.setNameFilters(QStringList() << "*.*");
         dir.setFilter(QDir::Files);
@@ -51,15 +56,16 @@ void VideoPlayer::playChannel(QUrl &channelUrl, const bool &fromBeginning)
         if (!m_channelPlaylist.isEmpty())
             m_channelPlaylist.clear();
     }
+    // starting to download new channel files
     downLoadChannelM3UFile(channelUrl);
-
 }
 
 void VideoPlayer::parseChannelPlaylist(const QString &fileName, const QString &filePath, const QString &newFilePath,
                                        const QString &extension, const int &idFormat, const bool &isAvailable, const int &index)
-{
-    qDebug() << "VideoPlayer::parseChannelPlaylist: " << fileName;
+{    
+    m_isPauseDownload = false;
     QFile file(newFilePath);
+    // if file is a correct M3U file then try to parse single line
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QTextStream fileStream(&file);
         m_curSegmentFileName = getSegmentName();
@@ -75,7 +81,8 @@ void VideoPlayer::parseChannelPlaylist(const QString &fileName, const QString &f
         }
     }
 //    play();
-    downloadChannelChain(false);
+    if (!m_isPauseDownload)
+        downloadChannelChain(false);
 }
 
 void VideoPlayer::channelUnavailable(const QString &msg, const QString &fileName, const QString &filePath,
@@ -89,17 +96,31 @@ void VideoPlayer::channelChainDownloaded(const QString &fileName, const QString 
                                          const QString &extension, const int &idFormat, const bool &isAvailable,
                                          const int &index)
 {
-    auto chain = m_channelPlaylist.at(index);
-    chain.isDownloaded = true;
-    m_channelPlaylist[index] = chain;
+    if (!m_isPauseDownload) {
+        auto res = std::find_if(m_channelPlaylist.begin(),
+                                m_channelPlaylist.end(),
+                                [newFilePath](ChannelSegment cs) {
+                return !cs.isDownloaded && cs.localUrl == newFilePath;});
+        if (res != m_channelPlaylist.end()) {
+            res->isDownloaded = true;
+
+            if (m_isFullScreen)
+                emit playUrlInPlayer(res->localUrl);
+            else                
+                emit playUrlInMiniPlayer(res->localUrl);
+        }
 
 //    play();
-
+//
     //  uncomment next 2 lines to unite all in 1 file
 //    auto res = std::find_if(m_channelPlaylist.cbegin(), m_channelPlaylist.cend(), [](ChannelSegment cs) {return !cs.isDownloaded;});
 //    if (res == m_channelPlaylist.cend())
-        emit playUrl(m_channelPlaylist.at(index).localUrl);
-    downloadChannelChain(false);
+//        emit playUrl(m_channelPlaylist.at(index).localUrl);
+
+//    if (!m_isPauseDownload)
+
+        downloadChannelChain(false);
+    }
 }
 
 void VideoPlayer::downLoadChannelM3UFile(const QUrl &channelUrl)
@@ -120,11 +141,18 @@ void VideoPlayer::parseLine(QString &line)
     if (line.toLower().trimmed().startsWith(m_format.channel_url.toLower().trimmed(), Qt::CaseInsensitive)) {
         m_channelFile.url = line;
         m_channelFile.localUrl = m_sets->appPath() + "/temp/current_channel/" + QUrl(line).fileName();
+
 //        QFileInfo fInf(line);
 //        QString fileExt = fInf.suffix();
 //        m_channelFile.localUrl = m_sets->appPath() + "/temp/current_channel/" + m_curSegmentFileName + "." + fileExt;
 //        m_channelPlaylist.push(m_channelFile);
-        m_channelPlaylist.push_back(m_channelFile);
+
+        // if there's no such url in m_channelPlaylist insert url to list
+        auto res = std::find_if(m_channelPlaylist.cbegin(),
+                                m_channelPlaylist.cend(),
+                                [=](ChannelSegment sg) { return sg.url.toLower().trimmed() == m_channelFile.url.toLower().trimmed(); });
+        if (res == m_channelPlaylist.cend())
+            m_channelPlaylist.push_back(m_channelFile);
     }
 }
 
@@ -146,8 +174,7 @@ void VideoPlayer::play()
         m_timer.stop();
     } else {
         for (int i = 0; i < m_channelPlaylist.size() - 1; ++i) {
-            if (m_channelPlaylist.at(i).isPlaying && !m_timer.isActive()) {
-                qDebug() << "delete: " << i << " ch: " << m_channelPlaylist.at(i).url;
+            if (m_channelPlaylist.at(i).isPlaying && !m_timer.isActive()) {                
                 QFile file(m_channelPlaylist.at(i).localUrl);
                 if (file.exists())
                     file.remove();
@@ -162,7 +189,10 @@ void VideoPlayer::play()
                 m_timer.setInterval(duration);
                 m_timer.start();
 
-                emit playUrl(m_channelPlaylist.at(i).localUrl);
+                if (m_isFullScreen)
+                    emit playUrlInPlayer(m_channelPlaylist.at(i).localUrl);
+                else
+                    emit playUrlInMiniPlayer(m_channelPlaylist.at(i).localUrl);
 
                 auto chain = m_channelPlaylist.at(i);
                 chain.isPlaying = true;
@@ -181,53 +211,69 @@ void VideoPlayer::channelPlayed(const QString &path)
     if (file.exists())
         file.remove();
 
+
     m_channelPlaylist.erase(std::remove_if(m_channelPlaylist.begin(),
                                            m_channelPlaylist.end(),
                                            [path](ChannelSegment cs) {
                                                 return cs.localUrl.toLower().trimmed() == path.toLower().trimmed();}),
                             m_channelPlaylist.cend());
 
-    if (m_channelPlaylist.size() == 2)
+    if (m_channelPlaylist.size() <= 2)
         playChannel(m_curChannelUrl, false);
-    if (m_channelPlaylist.size() == 0)
-        emit stopPlaying();
+    if (m_channelPlaylist.size() == 0) {
+        if (m_isFullScreen)
+            emit stopPlayingPlayer();
+        else
+            emit stopPlayingMiniPlayer();
+    }
 }
 
 void VideoPlayer::appendChannel()
 {
-    downloadChannelChain(true);
+    if (!m_isPauseDownload)
+        downloadChannelChain(true);
+}
+
+void VideoPlayer::pauseDownloadLinks(const bool &isPause)
+{
+    m_isPauseDownload = isPause;
+}
+
+void VideoPlayer::setFullScreen(const bool &isFull)
+{
+    m_isFullScreen = isFull;
 }
 
 void VideoPlayer::downloadChannelChain(const bool &append)
 {
     // looking for the first not downloaded channel link, if found then looking for it downloaded version,
-    // if found erasing it not downloaded version otherwise download it
-    int index {};
+    // if found erasing it not downloaded version otherwise download it    
+    int index {};    
     for (const auto &chainLink : m_channelPlaylist) {
         if (!chainLink.isDownloaded) {
             QString curUrlStr = chainLink.url;
-            auto res = std::find_if(m_channelPlaylist.cbegin(),
-                                    m_channelPlaylist.cend(),
-                                    [curUrlStr](ChannelSegment cs) {
-                                        return (cs.url.toLower().trimmed() == curUrlStr.toLower().trimmed()
-                                                && cs.isDownloaded);
-                                    });
-            if (res == m_channelPlaylist.end()) {
+//            auto res = std::find_if(m_channelPlaylist.cbegin(),
+//                                    m_channelPlaylist.cend(),
+//                                    [curUrlStr](ChannelSegment cs) {
+//                                        return (cs.url.toLower().trimmed() == curUrlStr.toLower().trimmed()
+//                                                && cs.isDownloaded);
+//                                    });
+//            if (res == m_channelPlaylist.end()) {
                 QString newFilePath = chainLink.localUrl;
                 m_chainLoader.doDownload(newFilePath, index, curUrlStr, "", true, 0, append);
                 break;
-            } else {
-                m_channelPlaylist.erase(std::remove_if(m_channelPlaylist.begin(),
-                                                       m_channelPlaylist.end(),
-                                                       [curUrlStr](ChannelSegment cs) {
-                                                           return (cs.url.toLower().trimmed() == curUrlStr.toLower().trimmed()
-                                                                   && !cs.isDownloaded);
-                                                       }),
-                                        m_channelPlaylist.cend());
-            }
+//            } else {
+//                m_channelPlaylist.erase(std::remove_if(m_channelPlaylist.begin(),
+//                                                       m_channelPlaylist.end(),
+//                                                       [curUrlStr](ChannelSegment cs) {
+//                                                           return (cs.url.toLower().trimmed() == curUrlStr.toLower().trimmed()
+//                                                                   && !cs.isDownloaded);
+//                                                       }),
+//                                        m_channelPlaylist.cend());
+//            }
         }
         ++index;
-    }
+    }    
 }
 
 QString VideoPlayer::getSegmentName()

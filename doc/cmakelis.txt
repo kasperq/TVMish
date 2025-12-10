@@ -1,0 +1,138 @@
+cmake_minimum_required(VERSION 3.8)
+
+project(TVmish VERSION 0.0.1 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOMOC ON)
+
+find_package(Qt6 6.8 REQUIRED COMPONENTS
+    Quick Qml Concurrent Gui Sql Core Widgets Multimedia
+)
+
+# Set output directories
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
+qt_standard_project_setup(REQUIRES 6.8)
+
+qt_add_executable(TVmish
+    main.cpp
+)
+
+# Verify QML file exists
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Qml/MainForm.qml")
+    message(FATAL_ERROR "QML file not found: ${CMAKE_CURRENT_SOURCE_DIR}/Qml/MainForm.qml")
+endif()
+
+qt_add_qml_module(TVmish
+    URI "com.seva.TVmish"
+    VERSION 1.0
+    OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
+    QML_FILES
+        "Qml/MainForm.qml"
+    SOURCES
+        Classes/tvmish.h Classes/tvmish.cpp
+        Classes/additional.h
+        Classes/categories.h Classes/categories.cpp
+        Classes/category.h Classes/category.cpp
+        Classes/channel.h Classes/channel.cpp
+        Classes/channels.h Classes/channels.cpp
+        Classes/epg.h Classes/epg.cpp
+        Classes/epgkart.h Classes/epgkart.cpp
+        Classes/epgs.h Classes/epgs.cpp
+        Classes/epgschedule.h Classes/epgschedule.cpp
+        Classes/filecopier.h Classes/filecopier.cpp
+        Classes/filedownloader.h Classes/filedownloader.cpp
+        Classes/logos.h Classes/logos.cpp
+        Classes/playlist.h Classes/playlist.cpp
+        Classes/playlists.h Classes/playlists.cpp
+        Classes/plfile.h Classes/plfile.cpp
+        Classes/plfiles.h Classes/plfiles.cpp
+        Classes/settings.h Classes/settings.cpp
+        Classes/videoplayer.h Classes/videoplayer.cpp
+        Classes/videoitem.h Classes/videoitem.cpp
+        Controllers/epgcontroller.h Controllers/epgcontroller.cpp
+        Controllers/maincontroller.h Controllers/maincontroller.cpp
+        Controllers/playlistcontroller.h Controllers/playlistcontroller.cpp
+        Controllers/tvcontroller.h Controllers/tvcontroller.cpp
+        DB/database.h DB/database.cpp
+        DB/dbconnpool.h DB/dbconnpool.cpp
+        DB/dbst.h DB/dbst.cpp
+        Gateways/categorygw.h Gateways/categorygw.cpp
+        Gateways/channelgw.h Gateways/channelgw.cpp
+        Gateways/epggw.h Gateways/epggw.cpp
+        Gateways/logosgw.h Gateways/logosgw.cpp
+        Gateways/playlistgw.h Gateways/playlistgw.cpp
+        Gateways/plfilegw.h Gateways/plfilegw.cpp
+        Models/categorymodel.h Models/categorymodel.cpp
+        Models/channelsmodel.h Models/channelsmodel.cpp
+        Models/epgmodel.h Models/epgmodel.cpp
+        Models/playlistsmodel.h Models/playlistsmodel.cpp
+        Models/plfilemodel.h Models/plfilemodel.cpp
+        Thread/filecopythread.h Thread/filecopythread.cpp
+        Thread/playlistgwthread.h Thread/playlistgwthread.cpp
+        Thread/playlistparsethread.h Thread/playlistparsethread.cpp
+        Thread/poolthread.h Thread/poolthread.cpp
+        Thread/setsthread.h Thread/setsthread.cpp
+    RESOURCES
+        "resources.qrc"
+)
+
+find_package(Qt6 COMPONENTS CoreTools)
+if(Qt6CoreTools_FOUND)
+    find_package(Qt6 COMPONENTS QmlTools REQUIRED)
+    # qt6_add_resources(QT_RESOURCES qml_qt6.qrc)
+    find_package(Qt6 COMPONENTS MultimediaQuickPrivate REQUIRED)
+    include_directories(${Qt6MultimediaQuick_PRIVATE_INCLUDE_DIRS})
+    include_directories(${Qt6Multimedia_PRIVATE_INCLUDE_DIRS})
+    find_package(Qt6 REQUIRED COMPONENTS BuildInternals OPTIONAL_COMPONENTS Multimedia)
+#     # add_definitions(${Qt6Core_DEFINITIONS})
+endif()
+# QtAVPlayer setup - use relative path or find_package if available
+# include_directories(../src/)
+set(QT_AVPLAYER_DIR QtAVPlayer)
+include(QtAVPlayer/QtAVPlayer.cmake)
+
+set(SOURCES ${QtAVPlayer_SOURCES} main.cpp)
+
+# add_executable(${PROJECT_NAME} WIN32 ${SOURCES} ${QT_RESOURCES})
+# if(NOT WIN32)
+#     add_definitions(-std=c++1z)
+#     target_compile_options(${PROJECT_NAME} PRIVATE -fPIC)
+# endif()
+
+set(LIBS ${QtAVPlayer_LIBS})
+
+if(Qt6_FOUND)
+    set(LIBS ${LIBS}
+        Qt6::Quick
+        Qt6::Qml
+        Qt6::Concurrent
+        Qt6::Gui
+        Qt6::Sql
+        Qt6::Core
+        Qt6::Widgets
+        Qt6::Multimedia
+        Qt6::MultimediaQuickPrivate)
+endif()
+
+# Link libraries
+target_link_libraries(TVmish PRIVATE ${LIBS})
+
+# Set target properties
+set_target_properties(TVmish PROPERTIES
+    MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+    MACOSX_BUNDLE TRUE
+    WIN32_EXECUTABLE TRUE
+)
+
+# Installation
+include(GNUInstallDirs)
+install(TARGETS TVmish
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)

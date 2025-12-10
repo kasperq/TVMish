@@ -80,9 +80,13 @@ QVariant ChannelsModel::data(const QModelIndex &index, int role) const
     case IdLogoRole:
         idLogo = channel.idLogo();
         return QVariant(idLogo);
-    case LogoPathRole:
+    case LogoPathRole: {
         logoPath = channel.logoPath();
-        return QVariant(logoPath);
+        QFile logoFile(logoPath.toLocalFile());
+        if (logoFile.exists())
+            return QVariant(logoPath);
+        return QVariant(QUrl());
+    }
     case IsFavoriteRole:
         isFavorite = channel.isFavorite();
         return QVariant(isFavorite);

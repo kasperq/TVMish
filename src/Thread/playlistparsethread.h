@@ -26,7 +26,7 @@ public:
     bool isRunning() const;
 
 signals:
-    void channelParsed(Channel &channel, const int &idPlaylist, const int &idFile, const QString &naim);
+    void channelParsed(Channel channel, const int &idPlaylist, const int &idFile, const QString &naim);
     void findCategoryId(QString &groupName, const int &idPlaylist, const int &idFile);
     void fullyParsed(const int &idPlaylist, const int &idFile);
 //    void finished();

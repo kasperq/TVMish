@@ -35,98 +35,10 @@ ApplicationWindow {
             Layout.maximumHeight: 40
         }
 
-        TabBar {
+        Elements.MainMenuToolbar {
             id: tab
             Layout.fillWidth: true
             Layout.fillHeight: true
-
-            property int tab_width: 100
-            width: tab_width
-
-            background: Rectangle {
-                anchors.fill: parent
-                opacity: 0.3
-                color: "dimgray"
-                radius: 2
-            }
-
-            Elements.TabBtn {
-                id: btn_tv
-                btn_text: qsTr("TV")
-                curId: 0
-                btn_width: tab.tab_width - 3
-                btn_leftMargin: 10
-                ico_path: "qrc:/Qml/Ico/tv.ico"
-
-                anchors.top: parent.top
-                anchors.left: parent.left
-            }
-            Elements.TabBtn {
-                id: btn_prefs
-                btn_text: qsTr("Prefs.")
-                curId: 1
-                btn_width: tab.tab_width - 3
-                btn_leftMargin: 10
-                ico_path: "qrc:/Qml/Ico/equalizer.ico"
-
-                anchors.top: parent.top
-                anchors.left: parent.left
-                anchors.topMargin: curId * (btn_tv.height + 1)
-            }
-            Elements.TabBtn {
-                id: btn_plMngr
-                btn_text: qsTr("Pl.mngr.")
-                curId: 2
-                btn_width: tab.tab_width - 3
-                btn_leftMargin: 10
-                ico_path: "qrc:/Qml/Ico/list.ico"
-
-                anchors.top: parent.top
-                anchors.left: parent.left
-                anchors.topMargin: curId * (btn_tv.height + 1)
-            }
-            Elements.TabBtn {
-                id: btn_test
-                btn_text: qsTr("Schdl.")
-                curId: 3
-                btn_width: tab.tab_width - 3
-                btn_leftMargin: 10
-                ico_path: "qrc:/Qml/Ico/calendar.ico"
-
-                anchors.top: parent.top
-                anchors.left: parent.left
-                anchors.topMargin: curId * (btn_tv.height + 1)
-            }
-
-            onCurrentIndexChanged: {
-                switch (currentIndex)
-                {
-                case 0:
-                    mainContr.openTvMode();
-                    loader.source = "qrc:/Qml/Forms/TvForm.qml"
-                    break;
-                    //            case 1:
-                    //                loader.source = "qrc:/Test_2.qml"
-                    //                break;
-                case 2:
-                    mainContr.openPlaylistManager();
-                    loader.source = "qrc:/Qml/Forms/PlaylistManagerForm.qml"
-                    break;
-                    //            case 3:
-                    //                loader.source = "qrc:/Test_3.qml"
-                    //                break;
-                };
-            }
-            Keys.onPressed: (event) => {
-                                if (event.key === Qt.Key_Up) {
-                                    decrementCurrentIndex();
-                                    event.accepted = true;
-                                }
-                                if (event.key === Qt.Key_Down) {
-                                    incrementCurrentIndex();
-                                    event.accepted = true;
-                                }
-                            }
         }
     }
 
@@ -140,4 +52,27 @@ ApplicationWindow {
         tab.focus = true;
         tab.currentIndex = 0;
     }
+
+    Forms.PlayerForm {
+        id: _form_playerFS
+        opacity: 1
+
+    }
+    Connections {
+        target: _tvContr
+        function onOpenFullScreenPlayer() {
+//            loader.source = "qrc:/Qml/Forms/PlayerForm.qml"
+//            loader.focus = true;
+            _form_playerFS.opacity = 1;
+            _form_playerFS.visibility = "FullScreen";            
+//            _form_playerFS.visibility = "Windowed";
+
+        }
+//        function onFullScreenClosed() {
+//            console.log("onFullScreenClosed()");
+//            _form_playerFS.visibility = "Hidden";
+//            loader.source = "qrc:/Qml/Forms/TvForm.qml";
+//        }
+    }
+
 }

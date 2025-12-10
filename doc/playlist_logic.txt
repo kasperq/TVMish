@@ -1,0 +1,69 @@
+PlaylistManager logic
+
+-по умолчанию список наименований плейлистов свернут 
+-при выборе плейлиста ячейка расширяется вниз
+	-открывается сабтулбар и грид с файлами в плейлисте
+	-по умолчанию выбирается файл/категория "Все" даже для пустых плейлистов
+	
+	
+	
+-при добавлении файла в плейлист
+	-проверяется поддерживаемый формат
+	-файл по ссылке копируется в папку с программой "./temp
+	-в таблицу файлов заносится локальный путь с именем файла
+	-в CHANELS добавляются все каналы из локального файла
+
+-при удалении файла из плейлиста 
+	-выбираем количество каналов (DEL_NUM) в нем, если оно >0
+		-проходим по файлам после текущего (CUR_ID_FILE)
+		-смещаем нумерацию каналов на DEL_NUM
+		-переходим к текущему файлу (CUR_ID_FILE) 
+		-удаляем каналы в нем
+		-удаляем файл
+		-выбираем текущий файлы
+все каналы после него смещаются наверх
+
+
+Категории/файлы в плейлисте
+	Поля
+		-id
+		-id_playlist
+		-naim
+		-file_path
+	Методы
+		-open(id_playlist)
+		
+		
+		
+Каналы в категории
+	Поля
+		-id
+		-naim
+		-play_url
+		-has_archive -0 нет архива -1,2... количество дней в архиве
+		-лого -тип blob
+		-id_file
+		-id_group
+		-num
+		
+		
+Qml PlListsModel
+	indexChanged
+		|
+Cpp plLists
+	signal indexChanged(int index)
+	slot playlistScrolled(int playlistId)	
+		|
+Cpp files		
+	signal openFiles(int playlistId)
+	
+	
+
+http://5ae44b56e28f.goodstreem.org/playlists/uplist/358f02dc8b8d1d7bdb7d58b336345ad6/playlist.m3u8
+	
+	
+
+http://5ae44b56e28f.goodstreem.org/playlists/uplist/358f02dc8b8d1d7bdb7d58b336345ad6/playlist.m3u8
+	
+	
+	/D:/books

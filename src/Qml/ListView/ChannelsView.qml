@@ -147,7 +147,7 @@ ColumnLayout {
         onCurrentIndexChanged: {
             indexChanged(_listView_channels.currentIndex);
             _listView_channels.model.list = channels;
-            channels.scroll(_listView_channels.currentIndex);            
+            channels.scroll(_listView_channels.currentIndex);
         }
 
         model: ChannelsModel  {

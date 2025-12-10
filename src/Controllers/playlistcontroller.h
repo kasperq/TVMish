@@ -8,7 +8,7 @@
 
 #include "Gateways/playlistgw.h"
 #include "Classes/playlists.h"
-#include "Thread/playlistgwthread.h"
+//#include "Thread/playlistgwthread.h"
 
 #include "Gateways/plfilegw.h"
 #include "Classes/plfiles.h"
@@ -39,12 +39,19 @@ signals:
     void filesAdded(const int &idPlaylist);
     void channelsAdded(const int &idPlaylist, const int &idFile);
     void categoriesAdded();
+    void openChannelesInFile(const int &idPlaylist, const int &idFile, const bool &isFavorite);
 
 public slots:
+    // adds NAIM, id, num and isCurrent to m_plLists
     void addItemsFromDbToPlaylists(const int &idPlaylist);
+    // adds ID, file name, file path, format to m_files
     void addItemsFromDbToFiles();
-    void addItemsFromDbToChannels(const int &idPlaylist, const int &idFile);
+    // adds channels info to m_channels
+    void addItemsFromDbToChannels(const int &idPlaylist, const int &idFile, const bool &isFavorite);
+    // adds category info to m_categories
     void addItemsFromDbToCategories();
+
+    void filesScrolled(const int &idPlaylist, const int &idFile);
 
 private:
     QQmlApplicationEngine *m_engine;

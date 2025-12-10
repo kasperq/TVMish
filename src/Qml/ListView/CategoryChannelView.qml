@@ -15,6 +15,8 @@ RowLayout {
 
     property int height_channel: 40
     property int rowsNum: 0
+    property color accentColor: "dimgray"
+    focus: true
 
     ListView {
         id: _listView_categories
@@ -71,7 +73,48 @@ RowLayout {
         Layout.fillHeight: true
         Layout.fillWidth: true
         headerPositioning: ListView.OverlayHeader
-        flickableDirection: Flickable.AutoFlickDirection
+        keyNavigationEnabled: true
+        Keys.onPressed: (event) => {
+                            if (event.key === Qt.Key_Up) {
+//                                decrementCurrentIndex();
+                                console.log("up");
+                                event.accepted = true;
+                            }
+                            if (event.key === Qt.Key_Down) {
+//                                incrementCurrentIndex();
+                                console.log("down");
+                                event.accepted = true;
+                            }
+                        }
+
+        snapMode: ListView.SnapToItem
+        clip: true
+        maximumFlickVelocity: 10000
+        cacheBuffer: 1000
+        ScrollBar.vertical: ScrollBar {
+            id: _verticalScrollBar
+            active: pressed || _listView_channels.moving/* || listUp.pressed || listDown.pressed*/
+            orientation: Qt.Vertical
+            opacity: active ? 1:0
+
+            Behavior on opacity {NumberAnimation {duration: 500}}
+
+            contentItem: Rectangle {
+                implicitWidth: 4
+                radius: 2
+                implicitHeight: parent.height
+                color: accentColor
+            }
+        }
+        flickableDirection: Flickable.VerticalFlick
+//        ScrollBar.vertical: ScrollBar {
+//            id: _scroll
+//            policy: ScrollBar.AlwaysOff
+//            anchors.top: parent.top
+//            anchors.right: parent.right
+//            anchors.bottom: parent.bottom
+//        }
+
 
         model: ChannelsModel  {
             list: channels
@@ -165,8 +208,8 @@ RowLayout {
                 leftPadding: 3
                 rightPadding: 3
                 horizontalAlignment: Text.AlignLeft
-                Layout.maximumWidth: index+1 > 99 ? 30 : index+1 > 9 ? 25 : 20
-                Layout.minimumWidth: index+1 > 99 ? 30 : index+1 > 9 ? 25 : 20
+                Layout.maximumWidth: index+1 > 999 ? 35 : (index+1 > 99 ? 30 : (index+1 > 9 ? 25 : 20))
+                Layout.minimumWidth: index+1 > 999 ? 35 : (index+1 > 99 ? 30 : (index+1 > 9 ? 25 : 20))
                 Layout.fillHeight: true
                 back_radius: 0
             }
@@ -178,10 +221,11 @@ RowLayout {
                 autoScroll: true
                 activeFocusOnPress: false
                 back_color: Funcs.setColor(_edit_naim , index, _listView_channels.currentIndex);
-                border_color: Funcs.setBorderColor(_edit_naim.activeFocus);
+                border_color: Funcs.setBorderColor(_edit_naim.activeFocus);                
                 onPressed: {
                     _listView_channels.currentIndex = index;
-                    _videoPlayer.playChannel(model.url, true);
+                    // _videoPlayer.playChannel(model.url, true);
+                    _tvContr.playChannel(model.url);
                 }
                 is_favorite: model.is_favorite
                 back_radius: 0
@@ -210,7 +254,6 @@ RowLayout {
                     height: height_channel / 2
                     width: height_channel / 3
                     anchors.right: /*model.is_favorite ? _btn_fav.left : _edit_naim.hovered || _edit_archive.hovered ? */_btn_addFav.left/* : parent.right*/
-
                 }
                 Elements.ToolBtn {
                     id: _btn_fav
@@ -218,7 +261,7 @@ RowLayout {
                     opacity: 1
                     anchors.right: parent.right
                     anchors.top: parent.top
-                    height: height_channel
+                    height: parent.height
                     width: height_channel / 2
                     btn_text: qsTr("")
                     checkable: false
@@ -234,39 +277,64 @@ RowLayout {
                     opacity: 1
                     anchors.right: parent.right
                     anchors.top: parent.top
-                    height: height_channel
                     width: height_channel /2
+                    height: parent.height
                     btn_text: qsTr("")
                     checkable: false
                     ico_path: "qrc:/Qml/Ico/favorite-add.png"
                     showHint: true
                     hintText: qsTr("Add channel to favorites")
                     visible: {
-                        if (!model.is_favorite && _edit_naim.hovered)
+                        if ((!model.is_favorite && _edit_naim.isEntered) || (!model.is_favorite && _btn_addFav.isEntered) /*_edit_naim.hovered*/)
                             true;
                         else
                             false;
                     }
                     onClicked: channels.setIsFavorite(index, true);
                 }
+//                MouseArea {
+//                    id: _mA_edit
+//                    anchors.fill: parent
+//                    hoverEnabled: true
+//                    onEntered: { _edit_naim.isEntered = true; _edit_naim.isHovered = true; }
+//                    onExited: { _edit_naim.isEntered = false; _edit_naim.isHovered = false; }
+//                    onPressed: {
+//                        _listView_channels.currentIndex = index;
+//                        _videoPlayer.playChannel(model.url, true);
+//                    }
+//                }
             }
         }
         Connections {
             target: channels
             function onSelectItem(index) {
-                if (_listView_channels.currentIndex !== index)
+                if (_listView_channels.currentIndex !== index) {
+//                    console.log("index: " + index + "curInd: " + _listView_channels.currentIndex);
+//                    if (index > _listView_channels.currentIndex) {
+//                        _listView_channels.flick(0, -1 * index * 10);
+//                    } else {
+//                        _listView_channels.flick(0, index * 10);
+//                    }
                     _listView_channels.currentIndex = index;
+
+                }
             }
             function onItemChanged(index) {
                 _listView_channels.model.list = channels;
             }
-            function onRowCountChanged(rows) {
+            function onRowCountChanged(rows) {                
                 _listView_channels.model.list = channels;
                 rowsNum = channels.rowCount;
             }
             function onListChanged() {
                 _listView_channels.model.list = channels;
                 rowsNum = channels.rowCount;
+            }
+        }
+        Connections {
+            target: _tvContr
+            function onSetFocus() {
+                _listView_channels.focus = true;
             }
         }
     }

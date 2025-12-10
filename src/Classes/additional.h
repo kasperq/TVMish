@@ -2,11 +2,13 @@
 #define ADDITIONAL_H
 
 #include <QString>
+#include <QFile>
 
-//enum SenderFunc {
+//enum class SenderFunc {
 //    addUrlFile,
 //    addLocalFile
 //};
+
 struct ChannelSegment {
     QString url {};
     double duration {};
@@ -34,5 +36,6 @@ struct M3UFormat
 
     const QString channel_url {"http"};
 };
+
 
 #endif // ADDITIONAL_H

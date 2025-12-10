@@ -9,25 +9,23 @@ TabButton {
 
     property int curId: 0
     property string btn_text
-    property int btn_width: 50
+    property int btn_height: 30
     property int btn_leftMargin: 0
     property string ico_path
 
-    width: btn_width
-    height: 30
+    height: btn_height
     text: btn_text
     anchors.leftMargin: btn_leftMargin
-
+    implicitWidth: tab.width
 
     contentItem: RowLayout {
         anchors.fill: parent
-        spacing: 1
         Image {
             id: backgroundImage
-            Layout.fillHeight: true
+            Layout.preferredHeight: parent.height
+            Layout.preferredWidth: parent.height
             Layout.leftMargin: 2
-            height: 30
-            width: 30
+
             fillMode: Image.PreserveAspectFit
             source: ico_path
             visible: ico_path == "" ? false : true
@@ -35,23 +33,24 @@ TabButton {
         Text {
             Layout.fillHeight: true
             Layout.fillWidth: true
-            text: btn_.text
+            text: btn_text
             font: btn_.font
             opacity: enabled ? 1.0 : 0.3
             color: "white"
+
+
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: ico_path == "" ? Text.AlignHCenter : Text.AlignLeft
-            elide: Text.ElideLeft
-            visible: btn_.text == "" ? false : true
+            visible: btn_text === "" ? false : true
         }
     }
 
-    background: Rectangle {
+
+    background: Rectangle {        
         anchors.fill: parent
-        anchors.leftMargin: btn_.btn_leftMargin
         opacity: enabled ? 1 : 0.3
         color: {
-            if (tab.currentIndex === btn_.curId) {
+            if (tab.currentIndex === btn_.curId) {               
                 if (btn_.down)
                     "lightgray";
                 else

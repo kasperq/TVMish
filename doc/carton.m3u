@@ -1,0 +1,13 @@
+#EXTINF:0 tvg-rec="7",Cartoon Network
+#EXTGRP:детские
+http://vqwkxbrk.megogo.xyz/iptv/4A7CXCHXVV2U4Z/143/index.m3u
+
+#EXTINF:0 tvg-rec="0",CARTOON NETWORK SE
+#EXTGRP:другие
+http://vqwkxbrk.megogo.xyz/iptv/4A7CXCHXVV2U4Z/12043/index.m3u
+#EXTINF:0 tvg-rec="0",Cartoon Network CA
+#EXTGRP:USA
+http://vqwkxbrk.megogo.xyz/iptv/4A7CXCHXVV2U4Z/6508/index.m3u
+#EXTINF:0 tvg-rec="3",Cartoon Network orig
+#EXTGRP:HD Orig
+http://vqwkxbrk.megogo.xyz/iptv/4A7CXCHXVV2U4Z/9261/index.m3u

@@ -1,7 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>Qml/MainForm.qml</file>
-        <file>Qml/MainMenuToolbar.qml</file>
         <file>Qml/Elements/MainToolbar.qml</file>
         <file>Qml/Forms/TvForm.qml</file>
         <file>Qml/Forms/PlaylistManagerForm.qml</file>
@@ -67,5 +66,20 @@
         <file>Qml/ListView/CategoryChannelView.qml</file>
         <file>Qml/ListView/ScheduleView.qml</file>
         <file>Qml/Elements/PlayerMiniForm.qml</file>
+        <file>Qml/Ico/volume_down.png</file>
+        <file>Qml/Ico/volume_off.png</file>
+        <file>Qml/Ico/volume_on.png</file>
+        <file>Qml/Ico/volume_up.png</file>
+        <file>Qml/Ico/pause.png</file>
+        <file>Qml/Ico/play.png</file>
+        <file>Qml/Elements/PlayerControl.qml</file>
+        <file>Qml/Elements/PopupMessage.qml</file>
+        <file>Qml/Ico/full-screen.png</file>
+        <file>Qml/Ico/full-screen-exit.png</file>
+        <file>Qml/Forms/PlayerForm.qml</file>
+        <file>Qml/Forms/EpgForm.qml</file>
+        <file>Qml/ListView/EpgList.qml</file>
+        <file>Qml/Elements/MainMenuToolbar.qml</file>
+        <file>Qml/Elements/VideoTile.qml</file>
     </qresource>
 </RCC>

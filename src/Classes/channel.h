@@ -4,12 +4,17 @@
 #include <QString>
 #include <QUrl>
 #include <QImage>
+#include <QObject>
 
-class Channel
+class Channel : public QObject
 {
+    Q_OBJECT
 public:
-    Channel();
+    explicit Channel(QObject *parent = nullptr);
     virtual ~Channel();
+    Channel(const Channel& orig);
+    Channel& operator=(const Channel& orig);
+
 
     void clear();
 
