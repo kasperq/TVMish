@@ -3,3 +3,4 @@ Graphic/
 Output/
 build/
 sbuild/
+*.user
