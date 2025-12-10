@@ -63,6 +63,20 @@ void VideoItem::setSource(const QString &newSource)
     }
     m_avPlayer->setSource(m_source);
     m_avPlayer->play();
+    setIsPlaying(true);
+}
+
+bool VideoItem::isPlaying() const
+{
+    return m_isPlaying;
+}
+
+void VideoItem::setIsPlaying(bool newIsPlaying)
+{
+    if (m_isPlaying == newIsPlaying)
+        return;
+    m_isPlaying = newIsPlaying;
+    emit isPlayingChanged();
 }
 
 void VideoItem::getVideoFrame(const QAVVideoFrame &frame)

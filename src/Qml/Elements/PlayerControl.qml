@@ -11,8 +11,8 @@ import "../functions.js" as Funcs
 import Playlists 1.0
 
 Rectangle {
-    required property MediaPlayer _mplayer1
-    required property MediaPlayer _mplayer2
+    // required property MediaPlayer _mplayer1
+    // required property MediaPlayer _mplayer2
     property bool isPlaying: false
     property bool isMute: false
     property bool isEntered: false
@@ -79,7 +79,7 @@ Rectangle {
             opacity: 1
             enabled: false
             Layout.fillHeight: true
-            Layout.alignment: Qt.AlignHCenter
+            // Layout.alignment: Qt.AlignHCenter
             Layout.margins: 3
             btn_height: _rl_toolbar.height
             btn_width: _rl_toolbar.height

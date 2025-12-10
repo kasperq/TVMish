@@ -50,12 +50,12 @@ ToolButton {
             fillMode: Image.PreserveAspectFit
             source: ico_path
             visible: ico_path == "" ? false : true
-            verticalAlignment: Image.AlignVCenter
-            horizontalAlignment: /*btn_.text === "" ? Image.AlignLeft : */Image.AlignHCenter
+            // verticalAlignment: Image.AlignVCenter
+            // horizontalAlignment: /*btn_.text === "" ? Image.AlignLeft : */Image.AlignHCenter
         }
         Text {
             Layout.fillWidth: true
-            Layout.fillHeight: true            
+            Layout.fillHeight: true
             wrapMode: Text.WrapAnywhere
             text: btn_.text
             font: btn_.font
@@ -71,13 +71,14 @@ ToolButton {
             elide: Text.ElideLeft
 
             visible: btn_.text === "" ? false : true
+            Layout.maximumWidth: !visible ? 0 : parent.width
         }
-        Rectangle {
-            id: fillerRect
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-            opacity: 0
-        }
+        // Rectangle {
+        //     id: fillerRect
+        //     Layout.fillHeight: true
+        //     Layout.fillWidth: true
+        //     opacity: 0
+        // }
     }
 
     background: Rectangle {

@@ -177,8 +177,8 @@ Window {
             anchors.right: parent.right
             height: parent.height / 8
             visible: _form_player.isEntered
-            _mplayer1: _player1
-            _mplayer2: _player2
+            // _mplayer1: _player1
+            // _mplayer2: _player2
             onIsFullScreenChanged: {
                 if (!isSeeking) {
                     _videoPlayer.pauseDownloadLinks(true);
