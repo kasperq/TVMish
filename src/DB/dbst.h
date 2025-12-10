@@ -18,8 +18,7 @@ class DBst : public QObject
     Q_OBJECT    
 public:
     static DBst &getInstance();
-    DBst(QObject *parent);
-    DBst();
+
 //    DBst(const DBst& value, QObject *parent);
 //    DBst& operator=(const DBst& value);
     virtual ~DBst();
@@ -48,6 +47,8 @@ public slots:
     void setIsDbThrOpened(const bool &newIsDbThrOpened);
 
 private:
+    DBst(QObject *parent);
+    DBst();
     DBst(const DBst& value, QObject *parent);
     DBst& operator=(const DBst& value);
 

@@ -18,7 +18,12 @@ ToolButton {
     property bool showHint: false
     property bool isFocused: false
 
-    signal clicked
+    property bool isEntered: false
+    property bool containsMouse: _mR.containsMouse
+
+    // signal clicked
+    signal entered
+    signal exited
 
     highlighted: true
 
@@ -50,7 +55,7 @@ ToolButton {
         }
         Text {
             Layout.fillWidth: true
-            Layout.fillHeight: true
+            Layout.fillHeight: true            
             wrapMode: Text.WrapAnywhere
             text: btn_.text
             font: btn_.font
@@ -87,7 +92,9 @@ ToolButton {
     }
     MouseArea {
         id: _mR
-        anchors.fill: parent        
+        anchors.fill: parent
+        propagateComposedEvents: true
+        hoverEnabled: true
 
         onClicked: {
             btn_.clicked();
@@ -102,7 +109,9 @@ ToolButton {
             }
             btn_.state = "PRESSED";
         }
-        onHoveredChanged: btn_.state = "HOVERED"
+//        onHoveredChanged: { btn_.state = "HOVERED"; hint.visible = true; }
+        onEntered: { isEntered = true; btn_.state = "HOVERED"; if (btn_ != null) hint.visible = true; btn_.entered(); }
+        onExited: {isEntered = false; btn_.state = "NORMAL"; if (btn_ != null) hint.visible = false; btn_.exited(); }
     }
     Keys.onPressed: (event) => {
                         if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
@@ -119,7 +128,7 @@ ToolButton {
             when: btn_.hovered
             PropertyChanges {
                 target: btn_back;
-                color: btn_.checked ? "darkgray" : "lightgray"
+                color: btn_.checked ? "darkgray" : "lightgray"                
             }
         },
         State {
@@ -152,7 +161,7 @@ ToolButton {
     ToolTip {
         id: hint
         parent: btn_ != null ? btn_ : null
-        visible: btn_.hovered && showHint
+//        visible: btn_.hovered /*btn_.state == "HOVERED"*/ && showHint
         text: hintText
         delay: 500
         timeout: 5000

@@ -6,7 +6,6 @@
 
 //#include <QtConcurrent>
 //#include <QFuture>
-#include <variant>
 
 
 #include <QTime>
@@ -137,8 +136,8 @@ QFuture<bool> DBst::execAndCheck(QSqlQuery &query)
             qDebug() << "db is closed";
             QSqlDatabase::database(m_connName).open();
         }
-        QSqlQuery newQ(QSqlDatabase::database(m_connName));        
-        newQ = query;
+        QSqlQuery newQ(QSqlDatabase::database(m_connName));
+        newQ = std::move(query);
 
         qDebug() << "Dbst: execAndCheck 3";
         try {
@@ -244,9 +243,10 @@ void DBst::initDbSets()
     QString fileName;
     connect(this, SIGNAL(changeIsDbOpened(bool)), this, SLOT(setIsDbThrOpened(bool)));
 #ifdef QT_DEBUG
-    fileName = "d:/Projects/qt/TVmish/db/TVDB.db3";
+    // fileName = "d:/Projects/qt/TVmish/db/TVDB.db3";
+    fileName = "../../db/TVDB.db3";
 #else
-    fileName = QGuiApplication::applicationDirPath().toStdString() + "/TVDB.db3";
+    fileName = QCoreApplication::applicationDirPath() + "/TVDB.db3";
 #endif
     dbFile.setFileName(fileName);
     if (!dbFile.exists()) {

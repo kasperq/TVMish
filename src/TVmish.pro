@@ -3,17 +3,21 @@ QT += concurrent \
       quick \      
       sql \
       widgets \      
-      core
+      core \
+      gui-private \
+      multimedia
 TARGET = TVmish
 TEMPLATE = app
 
 CONFIG += c++17
 #CONFIG -= app_bundle
 
-win32 {
-    INCLUDEPATH += c:/boost
-#    LIBS += c:/boost/stage/lib/libboost_date_time-mgw46-1_48.a
-}
+DEFINES += "QT_AVPLAYER_MULTIMEDIA"
+
+include(QtAVPlayer/QtAVPlayer.pri)
+
+lessThan(QT_MAJOR_VERSION, 6): QT += qtmultimediaquicktools-private
+equals(QT_MAJOR_VERSION, 6): QT += multimediaquick-private
 
 SOURCES += \
         ./Classes/tvmish.cpp \
@@ -21,6 +25,10 @@ SOURCES += \
         Classes/category.cpp \
         Classes/channel.cpp \
         Classes/channels.cpp \
+        Classes/epg.cpp \
+        Classes/epgkart.cpp \
+        Classes/epgs.cpp \
+        Classes/epgschedule.cpp \
         Classes/filecopier.cpp \
         Classes/filedownloader.cpp \
         Classes/logos.cpp \
@@ -30,6 +38,8 @@ SOURCES += \
         Classes/plfiles.cpp \
         Classes/settings.cpp \
         Classes/videoplayer.cpp \
+        Classes/videoitem.cpp \
+        Controllers/epgcontroller.cpp \
         Controllers/maincontroller.cpp \
         Controllers/playlistcontroller.cpp \
         Controllers/tvcontroller.cpp \
@@ -38,11 +48,13 @@ SOURCES += \
         DB/dbst.cpp \
         Gateways/categorygw.cpp \
         Gateways/channelgw.cpp \
+        Gateways/epggw.cpp \
         Gateways/logosgw.cpp \
         Gateways/playlistgw.cpp \
         Gateways/plfilegw.cpp \
         Models/categorymodel.cpp \
         Models/channelsmodel.cpp \
+        Models/epgmodel.cpp \
         Models/playlistsmodel.cpp \
         Models/plfilemodel.cpp \
         Thread/filecopythread.cpp \
@@ -59,6 +71,10 @@ HEADERS += \
     Classes/category.h \
     Classes/channel.h \
     Classes/channels.h \
+    Classes/epg.h \
+    Classes/epgkart.h \
+    Classes/epgs.h \
+    Classes/epgschedule.h \
     Classes/filecopier.h \
     Classes/filedownloader.h \
     Classes/logos.h \
@@ -68,6 +84,8 @@ HEADERS += \
     Classes/plfiles.h \
     Classes/settings.h \
     Classes/videoplayer.h \
+    Classes/videoitem.h \
+    Controllers/epgcontroller.h \
     Controllers/maincontroller.h \
     Controllers/playlistcontroller.h \
     Controllers/tvcontroller.h \
@@ -76,11 +94,13 @@ HEADERS += \
     DB/dbst.h \
     Gateways/categorygw.h \
     Gateways/channelgw.h \
+    Gateways/epggw.h \
     Gateways/logosgw.h \
     Gateways/playlistgw.h \
     Gateways/plfilegw.h \
     Models/categorymodel.h \
     Models/channelsmodel.h \
+    Models/epgmodel.h \
     Models/playlistsmodel.h \
     Models/plfilemodel.h \
     Thread/filecopythread.h \
@@ -96,3 +116,4 @@ RESOURCES += \
     resources.qrc
 
 
+android: include(/home/sevizdral/Android/Sdk/android_openssl/openssl.pri)

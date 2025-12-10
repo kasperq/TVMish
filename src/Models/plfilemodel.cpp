@@ -1,5 +1,7 @@
 #include "plfilemodel.h"
 
+#include "./Classes/additional.h"
+
 PlFilesModel::PlFilesModel()
 {    
     m_files = new PlFiles();
@@ -37,7 +39,7 @@ QVariant PlFilesModel::data(const QModelIndex &index, int role) const
         fileName = plFile.fileName();
         return QVariant(fileName);
     case FilePathRole:
-        filePath = plFile.filePath();
+        filePath = plFile.filePath();        
         return QVariant(filePath);
     case FilePathLocalRole:
         filePathLocal = plFile.filePathLocal();

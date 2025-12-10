@@ -6,6 +6,7 @@ import QtQuick.Controls.Universal 2.12
 
 import "../Elements" as Elements
 import "../ListView" as LViews
+
 Page {
     id: page_plMngr
 

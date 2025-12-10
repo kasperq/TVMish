@@ -5,6 +5,7 @@
 #include <QtNetwork>
 
 class QSslError;
+class QDataStream;
 
 class FileDownloader : public QObject
 {
@@ -46,6 +47,8 @@ private:
     bool m_isAppend {false};
 
     QString m_errorMsg {tr("")};
+
+    QByteArray m_buffer;
 
 };
 

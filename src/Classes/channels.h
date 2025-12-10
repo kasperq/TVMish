@@ -92,7 +92,7 @@ public slots:
     void scroll(int index);
 
     void update(const QString &filePath);
-    void addParsedChannel(Channel &newChannel, const int &idPlaylist, const int &idFile);    
+    void addParsedChannel(Channel newChannel, const int &idPlaylist, const int &idFile);
     void setNewIdChannelAndNums(const int &index, const int &newId, const int &numPlaylist, const int &idFile, const int &idPlaylist);
     void restartInserting();
 
@@ -116,6 +116,7 @@ public slots:
 
 private:
     QVector< Channel > m_channels;
+    QVector< Channel > m_filteredChannels;
     std::shared_ptr< Settings > m_sets;
 
     Channel m_newChannel;

@@ -3,7 +3,8 @@
 
 #include <QObject>
 #include <QQmlApplicationEngine>
-
+#include <QList>
+#include <QUrl>
 
 #include "playlistcontroller.h"
 #include "Classes/videoplayer.h"
@@ -17,10 +18,20 @@ public:
 
     void setSets(const Settings &value);
 signals:
+    void openFullScreenPlayer();
+    void fullScreenClosed();
+    void setFocus();
+    void playFullScreenPlayer(QUrl playingUrl, QList<QUrl> tracks, int position);
+    void playMiniPlayer(QUrl playingUrl, QList<QUrl> tracks, int position);
+    void playChannel(QUrl url);
+    void startPlayingChannel(QString url);
 
 public slots:
     void openTVMode();
     void disconnectAllConnections();
+    void showFullScreenPlayer(QUrl playingUrl, QList<QUrl> tracks, int position);
+    void closeFullScreenPlayer(QUrl playingUrl, QList<QUrl> tracks, int position);
+    void getFocus();
 
 private:
     QQmlApplicationEngine *m_engine;
@@ -28,6 +39,9 @@ private:
 
     PlaylistController m_plContr {*m_engine};
     VideoPlayer m_video;
+
+private slots:
+    void playChannelSlot(QUrl url);
 };
 
 #endif // TVCONTROLLER_H

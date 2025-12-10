@@ -68,8 +68,10 @@ bool FileDownloader::saveToDisk(const QString &filename, QIODevice *data)
         if (file.isOpen())
             file.write(data->readAll());
         file.close();
-        qDebug() << "Download of " << m_fullFilePath << " succeeded (saved to " << m_newPath << ")";
-        emit fileDownloaded(m_fName, m_fullFilePath, m_newPath, m_extension, m_idFormat, m_isAvailable, m_index);
+
+        m_buffer = data->readAll();
+        qDebug() << "Download of " << m_fullFilePath << " succeeded "/*(saved to " << m_newPath << ")"*/;
+        emit fileDownloaded(m_fName, m_fullFilePath, m_newPath, m_extension, m_idFormat, m_isAvailable, m_index);        
 
         return true;
     } else {

@@ -7,6 +7,7 @@
 
 #include "playlistcontroller.h"
 #include "tvcontroller.h"
+#include "epgcontroller.h"
 
 class MainController : public QObject
 {
@@ -32,7 +33,8 @@ private:
     QQmlApplicationEngine engine;
 
     PlaylistController m_plContr {engine};
-    TVController m_tvContr {engine};    
+    TVController m_tvContr {engine};
+    EpgController m_epgContr {engine};
     Settings m_sets;
 };
 

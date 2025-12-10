@@ -8,12 +8,14 @@
 #include "Models/plfilemodel.h"
 #include "Models/channelsmodel.h"
 #include "Models/categorymodel.h"
+#include "Models/epgmodel.h"
 
 #include "Classes/playlists.h"
 #include "Classes/plfiles.h"
 #include "Classes/channels.h"
 #include "Classes/categories.h"
 #include "Classes/videoplayer.h"
+#include "Classes/epgs.h"
 
 MainController::MainController()
 {
@@ -48,9 +50,15 @@ void MainController::loadMainForm()
     qmlRegisterUncreatableType<VideoPlayer>("Playlists", 1, 0, "_videoPlayer",
                                             QStringLiteral("VideoPlayer shouldn't be created in QML"));
 
+    qmlRegisterType<EpgsModel>("Playlists", 1, 0, "EpgsModel");
+    qmlRegisterUncreatableType<Epgs>("Playlists", 1, 0, "Epgs",
+                                          QStringLiteral("Epgs shouldn't be created in QML"));
+
+    qDebug() << "QRC paths:" << QDir(":/").entryList();
     engine.load(QUrl(QStringLiteral("qrc:/Qml/MainForm.qml")));
-    if (engine.rootObjects().isEmpty())
+    if (engine.rootObjects().isEmpty()) {        
         qDebug() << "exit";
+    }
 
     engine.rootContext()->setContextProperty(QStringLiteral("mainContr"), this);
 }
@@ -76,7 +84,9 @@ void MainController::openPlaylistManager()
 
 void MainController::openTvSchedule()
 {
-
+    m_epgContr.disconnectAllConnections();
+    m_epgContr.setSets(m_sets);
+    m_epgContr.openEpgManager();
 }
 
 void MainController::openPlaylistChooser()

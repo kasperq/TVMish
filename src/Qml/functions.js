@@ -8,7 +8,8 @@ var color_activeFocus = "skyblue"
 var color_notActiveFocus = "transparent"
 
 function setColor(curControl, curIndex, index) {    
-    if (curControl.hovered) {
+//    if (curControl.hovered) {
+    if (curControl.isHovered) {
         if (curControl.activeFocus) {
             return "lightgray";
         } else {
@@ -34,3 +35,15 @@ function setColor(curControl, curIndex, index) {
 function setBorderColor(isActiveFocus) {
     return isActiveFocus ? color_activeFocus : color_notActiveFocus
 }
+
+function setScreenSize(isFull, playingUrl, tracks, position) {
+    if (isFull) {
+        _tvContr.showFullScreenPlayer(playingUrl, tracks, position);
+//        showFullScreen();
+    }
+    else {
+        _tvContr.closeFullScreenPlayer(playingUrl, tracks, position);
+//        showNormal();
+    }
+}
+

@@ -21,7 +21,10 @@ Channels::~Channels()
 
 QVector<Channel> Channels::items() const
 {
-    return m_channels;
+    if (m_filteredChannels.size() > 0)
+        return m_filteredChannels;
+    else
+        return m_channels;
 }
 
 bool Channels::setItemAt(int index, Channel &item)
@@ -141,7 +144,7 @@ void Channels::update(const QString &filePath)
     m_parseThrd.start();
 }
 
-void Channels::addParsedChannel(Channel &newChannel, const int &idPlaylist, const int &idFile)
+void Channels::addParsedChannel(Channel newChannel, const int &idPlaylist, const int &idFile)
 {
     qDebug() << "Channels::addParsedChannel: " << newChannel.naim() << " m_isInserting: " << m_isInsertingChannel;
     if (!m_isInsertingChannel && newChannel.url() != m_newChannel.url()) {
@@ -362,7 +365,13 @@ void Channels::setFavoriteNum(const int &index, const int &idChannel, const int 
 void Channels::filter(QString text)
 {
     m_filterNaim = text;
-    emit openChannels(m_curIdPlaylist, m_curIdFile, m_filterNaim, m_curIdChannel);
+    m_filteredChannels.clear();
+    for (const auto &channel : m_channels) {
+        if (channel.naim().contains(m_filterNaim, Qt::CaseInsensitive))
+            m_filteredChannels.append(channel);
+    }
+    emit listChanged();
+//    emit openChannels(m_curIdPlaylist, m_curIdFile, m_filterNaim, m_curIdChannel);
 }
 
 void Channels::filterCategory(const int &idCategory)
@@ -470,6 +479,7 @@ void Channels::save(const int &idPlaylist, const int &idFile)
 
 void Channels::initConnections()
 {
+    qRegisterMetaType<Channel>();
 //    connect(&m_parseThrd, &PlaylistParseThread::finished, &m_parseThrd, &QObject::deleteLater);
     connect(&m_timer, &QTimer::timeout, this, &Channels::restartInserting);
     connect(this, &Channels::pauseParsing, &m_parseThrd, &PlaylistParseThread::setPauseParsing);

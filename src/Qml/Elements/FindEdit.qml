@@ -12,6 +12,7 @@ Item {
     id: _item_findEdit
     signal closeFindEdit;
     property bool isBtnBackVisible: true
+
     RowLayout {
         anchors.fill: parent
         spacing: 1
@@ -30,7 +31,6 @@ Item {
         Elements.MyTextEdit {
             id: _edit_find
 
-            focus: true
             placeholderText: qsTr("Enter channel name")
             is_editable: true
             font.pixelSize: 12
@@ -41,8 +41,9 @@ Item {
             border_color: Funcs.setBorderColor(true);
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Keys.onReleased: {
-//                console.log("released: " + _edit_find.text);
+            activeFocusOnPress: true
+            onClicked: { _edit_find.focus = true; }
+            onTextChanged: {
                 if (_cb_isFilter.checked)
                     channels.filter(_edit_find.text);
                 if (_cb_isFind.checked)
@@ -50,7 +51,16 @@ Item {
                 _edit_find.focus = true;
             }
 
+//            Keys.onReleased: {
+//                if (_cb_isFilter.checked)
+//                    channels.filter(_edit_find.text);
+//                if (_cb_isFind.checked)
+//                    channels.find(_edit_find.text);
+//                _edit_find.focus = true;
+//            }
+
             Elements.ToolBtn {
+                id: _btn_cancel
                 anchors.right: parent.right
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
@@ -58,9 +68,9 @@ Item {
                 Layout.maximumWidth: parent.height
                 width: parent.height
                 anchors.margins: 1
-
                 btn_text: qsTr("")
                 checkable: false
+                hintText: qsTr("clear")
                 ico_path: "qrc:/Qml/Ico/cancel.png"
                 onClicked: {
                     _edit_find.text = "";
@@ -84,8 +94,11 @@ Item {
             text: qsTr("find")
             ButtonGroup.group: _btnGrp
             onClicked: {
-                channels.filter("");
-                channels.find(_edit_find.text);
+                if (_edit_find.text !== "") {
+                    channels.filter("");
+                    channels.find(_edit_find.text);
+                }
+                _edit_find.focus = true;
             }
         }
         Elements.MyCheckBox {
@@ -98,6 +111,12 @@ Item {
             checked: true
             text: qsTr("filter")
             ButtonGroup.group: _btnGrp
+            onClicked: {                
+                if (_edit_find.text !== "") {
+                    channels.filter(_edit_find.text);
+                }
+                _edit_find.focus = true;
+            }
 
         }
     }

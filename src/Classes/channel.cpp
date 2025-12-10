@@ -1,6 +1,6 @@
 #include "channel.h"
 
-Channel::Channel()
+Channel::Channel(QObject *parent) : QObject{parent}
 {
 
 }
@@ -8,6 +8,35 @@ Channel::Channel()
 Channel::~Channel()
 {
 
+}
+
+Channel::Channel(const Channel &orig)
+{
+    m_idChannel = orig.m_idChannel;
+    m_naim = orig.m_naim;
+    m_url = orig.m_url;
+    m_idFile = orig.m_idFile;
+    m_idPlaylist = orig.m_idPlaylist;
+    m_idCategory = orig.m_idCategory;
+    m_numFile = orig.m_numFile;
+    m_numPlaylist = orig.m_numPlaylist;
+    m_archDays = orig.m_archDays;
+    m_idLogo = orig.m_idLogo;
+}
+
+Channel &Channel::operator=(const Channel &orig)
+{
+    m_idChannel = orig.m_idChannel;
+    m_naim = orig.m_naim;
+    m_url = orig.m_url;
+    m_idFile = orig.m_idFile;
+    m_idPlaylist = orig.m_idPlaylist;
+    m_idCategory = orig.m_idCategory;
+    m_numFile = orig.m_numFile;
+    m_numPlaylist = orig.m_numPlaylist;
+    m_archDays = orig.m_archDays;
+    m_idLogo = orig.m_idLogo;
+    return *this;
 }
 
 void Channel::clear()

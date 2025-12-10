@@ -52,7 +52,7 @@ void PlaylistController::openPlaylistViewer()
     initChannelsConnections();
     openChannels();
 
-    m_channelGW.select(m_curIdPlaylist, 0);
+    m_channelGW.select(m_curIdPlaylist, 0, true);
 }
 
 void PlaylistController::setSets(const Settings &value)
@@ -129,7 +129,7 @@ void PlaylistController::addItemsFromDbToFiles()
     emit filesAdded(idPlaylist);
 }
 
-void PlaylistController::addItemsFromDbToChannels(const int &idPlaylist, const int &idFile)
+void PlaylistController::addItemsFromDbToChannels(const int &idPlaylist, const int &idFile, const bool &isFavorite)
 {
     int idChannel;
     QString naim;
@@ -142,11 +142,12 @@ void PlaylistController::addItemsFromDbToChannels(const int &idPlaylist, const i
 //    int idPlaylist {m_plLists.curIdPlaylist()};
     QString catNaim;
     QUrl logoPath;
-    bool isFavorite;
+//    bool isFavorite;
     int numFav;
     bool isAvailable;
 
-    m_channels.clear();    
+    if (isFavorite)
+        m_channels.clear();
     m_channels.setIdPlaylist(idPlaylist);
     m_channels.setIdFile(idFile);
 
@@ -168,7 +169,7 @@ void PlaylistController::addItemsFromDbToChannels(const int &idPlaylist, const i
             logoPath = m_channelGW.data()->value("logo_path").toUrl();
             QString path = "file:/" + m_sets->appPath() + logoPath.toString();
             logoPath = QUrl(path);
-            isFavorite = m_channelGW.data()->value("is_favorite").toBool();
+//            isFavorite = m_channelGW.data()->value("is_favorite").toBool();
             numFav = m_channelGW.data()->value("num_favorite").toInt();
             isAvailable = m_channelGW.data()->value("is_available").toBool();
 
@@ -180,7 +181,10 @@ void PlaylistController::addItemsFromDbToChannels(const int &idPlaylist, const i
                                idLogo, catNaim, logoPath, isFavorite, numFav, isAvailable);
         } while(m_channelGW.data()->next());
     }    
-    emit channelsAdded(idPlaylist, idFile);
+    if (isFavorite)
+        m_channelGW.select(idPlaylist, idFile, false);
+    else
+        emit channelsAdded(idPlaylist, idFile);
 }
 
 void PlaylistController::addItemsFromDbToCategories()
@@ -202,6 +206,11 @@ void PlaylistController::addItemsFromDbToCategories()
         } while(m_categoryGW.data()->next());
     }
     emit categoriesAdded();
+}
+
+void PlaylistController::filesScrolled(const int &idPlaylist, const int &idFile)
+{
+    emit openChannelesInFile(idPlaylist, idFile, true);
 }
 
 void PlaylistController::initPlaylistConnections()
@@ -255,7 +264,8 @@ void PlaylistController::openFiles()
 
 void PlaylistController::initChannelsConnections()
 {
-    connect(&m_files, &PlFiles::filesScrolled, &m_channelGW, &ChannelGW::select);
+    connect(&m_files, &PlFiles::filesScrolled, this, &PlaylistController::filesScrolled);
+    connect(this, &PlaylistController::openChannelesInFile, &m_channelGW, &ChannelGW::select);
     connect(&m_channelGW, &ChannelGW::selected, this, &PlaylistController::addItemsFromDbToChannels);
     connect(&m_channelGW, &ChannelGW::selected, &m_channels, &Channels::listChanged);
     connect(this, &PlaylistController::channelsAdded, &m_channels, &Channels::open);

@@ -15,7 +15,7 @@ public:
     int rows() const;
 
 signals:
-    void selected(const int &idPlaylist, const int &idFile);
+    void selected(const int &idPlaylist, const int &idFile, const bool &isFavorite);
     void inserted(const int &index, const int &newId, const int &numPlaylist, const int &idFile, const int &idPlaylist);
     void modified(const int &index);
     void deleted(const int &index, const int &id);
@@ -26,7 +26,7 @@ signals:
     void sendFavoriteResult(const int &index, const int &idChannel, const int& num);
 
 public slots:
-    void select(const int &idPlaylist, const int &idFile);
+    void select(const int &idPlaylist, const int &idFile, const bool &isFavorite = true);
     void selectWithFilter(const int &idPlaylist, const int &idFile, const QString &filterNaim = "", const int &idCategory = 0);
     void insert(const int &index, const QString &naim, const QString &url, const int &idFile, const int &idPlaylist,
                 const int &idCategory, const int &numPlaylist, const int &archDays,

@@ -13,219 +13,324 @@ import "../functions.js" as Funcs
 import Playlists 1.0
 
 Item {
+    id: _form_playerMini
     property int curMedia : 0   // 0  - _mediaplayer1; 1 - _mediaplayer2
     property bool isPlaying: false
-    property var tracks: Array()
-//    property int posM: _mediaplayer.position
-//    property int posM2: _mediaplayer2.position
-    property int posMLast
-    property int posNullCount: 0
+    property bool isSeeking: false
+    property int seekingPosition: 0
+    property var tracks: Array()   
     property bool isM1Playing: false
     property bool isM2Playing: false
-    property bool isM1Pausing: false
-    property bool isM2Pausing: false
+    property string curTime: new Date().toLocaleString(locale, "ddd hh:mm:ss dd.MM.yyyy")
+    property bool isMute: _toolbar_play.isMute
+    property bool isEntered: false
+    property bool isPaused: _toolbar_play.isPaused
+    property real volSize: _toolbar_play.volSize
+    property real volSizeOld
+    property bool fullScreen: _toolbar_play.isFullScreen
 
+    onIsPlayingChanged: _toolbar_play.isPlaying = isPlaying
+    onIsEnteredChanged: {
+        if (isEntered)
+            _timer_entered.start();
+    }
+
+    Timer {
+        id: _timer_entered
+        interval: 2000
+        repeat: false
+        onTriggered: {
+            isEntered = false;
+        }
+
+    }
 
     Rectangle {
         id: _rec_media1
         anchors.fill: parent
-        color: "black"        
+        color: "black"
 
-//        RowLayout {
-//            anchors.fill: parent
-
-
-        Video {
-            id: _mediaplayer
-
-//            anchors.top: parent.top
-//            anchors.bottom: parent.bottom
-//            anchors.left: parent.left
-//            anchors.right: parent.right
-//            width: parent.width / 2
-
+        VideoOutput {
+            id: _videoOut1
             anchors.fill: parent
+//            anchors.top: parent.top  anchors.bottom: parent.bottom  anchors.left: parent.left  width: parent.width / 2
+        }
+        VideoOutput {
+            id: _videoOut2
+            anchors.fill: parent
+//            anchors.top: parent.top anchors.bottom: parent.bottom anchors.right: parent.right width: parent.width / 2
+        }
+        MediaPlayer {
+            id: _player1
+            videoOutput: _videoOut1
+            audioOutput: AudioOutput {
+                id: _audioOutput1
+                volume: volSize
+                muted: isMute
+                onVolumeChanged: {
+                    _popup_.btn_text = volSize * 100;
 
-//            Layout.fillHeight: true
-//            Layout.fillWidth: true
-            volume: 0
-            loops: MediaPlayer.Infinite
-
-            onPositionChanged: {
-//                console.log("pos: " + posM + " dur: " + _mediaplayer.duration);
-
-                if (curMedia == 0) {
-                    if (position === 0 && posMLast > 0) {
-                        ++posNullCount;
-                        if (posNullCount === 3) {
-                            posNullCount = 0;
-                            _mediaplayer.pause();
-                            posMLast = 0;
-                            curMedia = 1;
-                            _mediaplayer2.play();
-                            _mediaplayer.anchors.bottom = parent.top
-//                            _mediaplayer2.pause();
-                            _mediaplayer.stop();
-                        }
+                    if (volSizeOld >= volSize * 100)
+                        _popup_.ico_path = "qrc:/Qml/Ico/volume_down.png";
+                    else
+                        _popup_.ico_path = "qrc:/Qml/Ico/volume_up.png";
+                    volSizeOld = volSize * 100;
+                    _popup_.open();
+                }
+            }
+            onMediaStatusChanged: {
+                if (mediaStatus == 6) {     // EndOfMedia
+                    if (_player2.source == "") {
+                        pause();
+                        isPlaying = false;
                     } else {
-                        posMLast = position;
+                        curMedia = 1;
+                        isM1Playing = false;
+                        isM2Playing = true;
+                        _videoOut2.visible = true;
+                        _player2.play();
+//                        _videoOut2.visible = true;
+                        pause();
+
+                        stop();
                     }
                 }
+                if (mediaStatus == 5 && isM2Playing)    // BufferedMedia
+                    pause();
+                if (isSeeking && mediaStatus == 5) {
+                    _player1.setPosition(seekingPosition);
+                    isSeeking = false;
+                    seekingPosition = 0;
+                    _player1.play();
+                }
+            }
 
-//                if (_mediaplayer.duration > 0 && curMedia == 0 && posM >= _mediaplayer.duration - 100 && posM <= _mediaplayer.duration) {
-//                    console.log("pos: " + posM + " dur: " + _mediaplayer.duration);
-//                    _mediaplayer2.play();
-//                    _mediaplayer2.pause();
-////                    _mediaplayer.anchors.bottom = parent.top
-//                    curMedia = 1;
-////                    _mediaplayer.pause();
-////                    _mediaplayer.stop();
-//                }
-            }
-            onStopped: {
-                var curUrl = source;
-                console.log("stoped m1");
-                tracks.shift();
-                if (tracks.length > 1) {
-                    source = tracks[1];
-                } else
-                    source = "";
-                _videoPlayer.channelPlayed(curUrl);
-            }
-            onPlaying: {
-                isM1Playing = true;
-                isM2Playing = false;
-                isM1Pausing = false;
-                console.log("playing m1");
-            }
-            onPaused: {
-                isM1Pausing = true;
-                isM2Pausing = false;
+            onPlaybackStateChanged: {
+                if (playbackState == MediaPlayer.StoppedState && !isM1Playing && isPlaying) {
+                    var curUrl = source;
+                    tracks.shift();
+                    if (tracks.length > 1) {
+                        source = tracks[1];
+                        play();
+                    } else
+                        source = "";
+                    _videoPlayer.channelPlayed(curUrl);
+                }
             }
         }
-        Video {
-            id: _mediaplayer2
 
-//            anchors.top: parent.top
-//            anchors.bottom: parent.bottom
-//            anchors.right: parent.right
-//            width: parent.width / 2
-
-            anchors.fill: parent
-
-//            Layout.fillHeight: true
-//            Layout.fillWidth: true
-            volume: 0
-            loops: MediaPlayer.Infinite
-
-            onPositionChanged: {
-                if (curMedia == 1) {
-                    if (position === 0 && posMLast > 0) {
-                        ++posNullCount;
-                        if (posNullCount === 3) {
-                            posNullCount = 0;
-                            _mediaplayer2.pause();
-                            posMLast = 0;
-                            curMedia = 0;
-                            _mediaplayer.play();
-                            _mediaplayer.anchors.fill = parent;
-                            _mediaplayer2.stop();
-                        }
+        MediaPlayer {
+            id: _player2
+            videoOutput: _videoOut2
+            audioOutput: AudioOutput {
+                id: _audioOutput2
+                volume: volSize
+                muted: isMute
+            }
+            onMediaStatusChanged: {
+                if (mediaStatus == 6) {
+                    if (_player1.source == "") {
+                        isPlaying = false;
+                        pause();
                     } else {
-                        posMLast = position;
+                        curMedia = 0;
+                        isM2Playing = false;
+                        isM1Playing = true;
+                        _videoOut2.visible = false;
+                        _player1.play();
+//                        _videoOut2.visible = false;
+                        pause();
+                        stop();
                     }
                 }
-
-//                if (_mediaplayer2.duration > 0 && curMedia == 1 && posM2 >= _mediaplayer2.duration - 100 && posM2 <= _mediaplayer2.duration) {
-//                    console.log("posM2: " + posM2 + " dur: " + _mediaplayer2.duration);
-//                    _mediaplayer.play();
-////                    _mediaplayer.anchors.fill = parent;
-
-//                    curMedia = 0;
-//                    _mediaplayer2.stop();
-//                }
+                if (mediaStatus == 5 && isM1Playing)
+                    pause();
             }
-            onStopped: {
-                var curUrl = source;
-                console.log("stoped m1");
-                tracks.shift();
-                if (tracks.length > 1) {
-                    source = tracks[1];
-                } else
-                    source = "";
-
-                _videoPlayer.channelPlayed(curUrl);
-            }
-            onPlaying: {
-                isM1Playing = false;
-                isM2Playing = true;
-                isM2Pausing = false;
-                console.log("playing m2");
-            }
-            onPaused: {
-                isM2Pausing = true;
-                isM1Pausing = false;
+            onPlaybackStateChanged: {
+                if (playbackState == MediaPlayer.StoppedState && !isM2Playing && isPlaying) {
+                    var curUrl = source;
+                    tracks.shift();
+                    if (tracks.length > 1) {
+                        source = tracks[1];
+                        play();
+                    } else
+                        source = "";
+                    _videoPlayer.channelPlayed(curUrl);
+                }
             }
         }
-//        }
+        Elements.PlayerControl {
+            id: _toolbar_play
+            anchors.bottom: parent.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: parent.height / 8
+            visible: _form_playerMini.isEntered
+            _mplayer1: _player1
+            _mplayer2: _player2
+            onIsFullScreenChanged: {
+                if (!isSeeking) {
+                    _videoPlayer.pauseDownloadLinks(true);
+                    if (isM1Playing)
+                        _player1.pause();
+                    if (isM2Playing)
+                        _player2.pause();
+
+                    var playingUrl;
+                    var position;
+                    if (isM1Playing) {
+                        playingUrl = _player1.source;
+                        position = _player1.position;
+                    }
+                    if (isM2Playing) {
+                        playingUrl = _player2.source;
+                        position = _player2.position;
+                    }
+
+                    _videoPlayer.setFullScreen(true);
+                    Funcs.setScreenSize(_toolbar_play.isFullScreen, playingUrl, tracks, position);
+                }
+            }
+        }
+
+
+        MouseArea {
+            id: _ma_m1
+            anchors.fill: parent
+            hoverEnabled: true
+            onMouseXChanged: isEntered = true
+            onEntered: { isEntered = true; }
+            onExited: { (_toolbar_play.isEntered ? isEntered = true : isEntered = false); }
+            onDoubleClicked: {
+                if (isPlaying) {
+                    _toolbar_play.isFullScreen = !_toolbar_play.isFullScreen;
+                }
+            }
+            Keys.onPressed: (event) => {
+                                if (event.key === Qt.Key_VolumeDown || event.key === Qt.Key_VolumeUp) {
+                                    volSizeOld = _toolbar_play.volSize * 100;
+                                    _toolbar_play.sliderValue = volSizeOld + (wheel.angleDelta.y / 120);
+                                    event.accepted = true;
+                                }
+                            }
+
+            WheelHandler {
+                id: _wheel_m1
+                onWheel: (wheel)=> {
+                             volSizeOld = _toolbar_play.volSize * 100;
+                             _toolbar_play.sliderValue = volSizeOld + (wheel.angleDelta.y / 120);
+                }
+            }
+
+        }
+
+
+        Elements.PopupMessage {
+            id: _popup_
+            anchors.centerIn: parent
+        }
+
 
         Connections {
             target: _videoPlayer
-            function onStopPlaying() {
+            function onStopPlayingMiniPlayer() {                
                 isPlaying = false;
-                tracks.splice();
-                _mediaplayer.stop();
-                _mediaplayer2.stop();
+                isM1Playing = false;
+                isM2Playing = false;
+                _player1.stop();
+                _player2.stop();
+                _player1.source = "";
+                _player2.source = "";
+                _videoOut2.visible = false;                
+                tracks.splice(0, tracks.length);
                 curMedia = 0;
-                posMLast = 0;
-                posNullCount = 0;
-            }
+            }            
 
-            function onPlayUrl(url) {
+            function onPlayUrlInMiniPlayer(url) {
+                console.log("play url: " + url);
                 tracks.push(url);
 
                 if (!isPlaying) {
                     isPlaying = true;
                     curMedia = 0;
-                    posMLast = 0;
-                    posNullCount = 0;
-                    _mediaplayer.visible = true;
-                    _mediaplayer.anchors.fill = _rec_media1;
 
-                    _mediaplayer.source = url;
-                    _mediaplayer.play();
-                    _mediaplayer2.source = "";
+                    _player1.source = url;
+                    isM1Playing = true;
+                    isM2Playing = false;
+                    _videoOut2.visible = false;
+                    _player1.play();
+                    _player2.source = "";
                 } else {
-                    if (curMedia == 0 && _mediaplayer2.source == "") {
-                        _mediaplayer2.source = url;
-//                        _mediaplayer2.play();
-//                        _mediaplayer2.pause();
+                    if (curMedia == 0) {
+                        _videoOut2.visible = false;
+                        isM1Playing = true;
+                        isM2Playing = false;
+                        if (_player1.source == "") {
+                            _player1.source = url;
+                            _player1.play();
+                        } else {
+                            if (_player2.source == "") {
+                                _player2.source = url;
+                                _player2.play();    // will be paused after showing picture
+                            }
+                        }
+                    }
+                    if (curMedia == 1) {
+                        isM1Playing = false;
+                        isM2Playing = true;
+                        _videoOut2.visible = true;
+                        if (_player2.source == "") {
+                            _player2.source = url;
+                            _player2.play();
+                        } else {
+                            if (_player1.source == "") {
+                                _player1.source = url;
+                                _player1.play();    // will be paused after showing picture
+                            }
+                        }
                     }
                 }
             }
         }
+        Connections {
+            target: _tvContr
+            function onPlayMiniPlayer(playingUrl, tracks, position) {
+                isM1Playing = true;
+                isM2Playing = true;
+                _player1.stop();
+                _player2.stop();
+                _player2.source = "";
+                _videoOut2.visible = false;
+                isM1Playing = true;
+                isM2Playing = false;
+                isPlaying = true;
+                isSeeking = true;
+                seekingPosition = position;
+                _toolbar_play.isFullScreen = false;
+
+                if (_form_playerMini.tracks.length > 0)
+                    _form_playerMini.tracks.splice(0, _form_playerMini.tracks.length);
+                curMedia = 0;
+
+
+
+                _player1.source = playingUrl;
+                _form_playerMini.tracks = tracks;
+
+                if (tracks.length > 1)
+                    _player2.source = tracks[1];
+
+                _player1.play();
+                _player2.play();
+                _videoPlayer.pauseDownloadLinks(false);
+            }
+
+        }
     }
-    MouseArea {
-        anchors.fill: parent
-        onPressed: {            
-//            if (isM1Playing) {
-//                if (isM1Pausing)
-//                    _mediaplayer.play();
-//                else
-//                    _mediaplayer.pause();
-//            }
-//            if (isM2Playing) {
-//                if (isM2Pausing)
-//                    _mediaplayer2.play();
-//                else
-//                    _mediaplayer2.pause();
-//            }
 
-
-                console.log("play");
-                _mediaplayer.source = "http://vqwkxbrk.megogo.xyz/iptv/4A7CXCHXVV2U4Z/157/1650399100000.m3u";
-                _mediaplayer.play();
-
-        }        
+    function printTracks() {
+        for(var i = 0; i < tracks.length; ++i)
+            console.log("tracks[" + i + "] = " + tracks[i]);
     }
+
 }
