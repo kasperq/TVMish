@@ -4,6 +4,8 @@
         -add selecting groups and channels list
             -add preview videoitem to channels list
 -rework fullscreen/smallscreen modes
+
+-fix work with DB 
 -fixes starting with empty playlists
 -fix deleting playlist (channels don't delete)
 -add DB creator
