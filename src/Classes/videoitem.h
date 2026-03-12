@@ -33,6 +33,9 @@ using VideoOutput = QQuickVideoOutput;
 class VideoItem : public QQuickItem
 {
     Q_OBJECT
+
+    Q_PROPERTY(QString source READ source WRITE setSource NOTIFY sourceChanged FINAL)
+
 public:
     VideoItem(QQuickItem *parent = nullptr);
     virtual ~VideoItem();
@@ -40,9 +43,14 @@ public:
     QString source() const;
     void setSource(const QString &newSource);
 
+    bool isPlaying() const;
+    void setIsPlaying(bool newIsPlaying);
+
 signals:
 //
     void sourceChanged();
+
+    void isPlayingChanged();
 
 protected:
     // void componentComplete() override;
@@ -63,7 +71,9 @@ private:
     int m_frameLowLimit { 16 };
     int m_frameHighLimit { 40 };
 
-    Q_PROPERTY(QString source READ source WRITE setSource NOTIFY sourceChanged FINAL)
+    bool m_isPlaying { false };
+
+    Q_PROPERTY(bool isPlaying READ isPlaying WRITE setIsPlaying NOTIFY isPlayingChanged FINAL)
 
 private slots:
     void getVideoFrame(const QAVVideoFrame &frame);

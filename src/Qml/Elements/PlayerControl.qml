@@ -11,8 +11,8 @@ import "../functions.js" as Funcs
 import Playlists 1.0
 
 Rectangle {
-    required property MediaPlayer _mplayer1
-    required property MediaPlayer _mplayer2
+    // required property MediaPlayer _mplayer1
+    // required property MediaPlayer _mplayer2
     property bool isPlaying: false
     property bool isMute: false
     property bool isEntered: false
@@ -67,19 +67,18 @@ Rectangle {
                 onValueChanged: { volSize = _slider_volume.value / 100; }
             }
         }
-        Rectangle {
-            id: _rect_leftFiller
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-            opacity: 0
-        }
+        // Rectangle {
+        //     id: _rect_leftFiller
+        //     Layout.fillHeight: true
+        //     Layout.fillWidth: true
+        //     opacity: 0
+        // }
         Elements.ToolBtn {
             id: _btn_play
             z: 0
             opacity: 1
-            enabled: false
+            enabled: true
             Layout.fillHeight: true
-            Layout.alignment: Qt.AlignHCenter
             Layout.margins: 3
             btn_height: _rl_toolbar.height
             btn_width: _rl_toolbar.height
@@ -89,18 +88,18 @@ Rectangle {
             showHint: true
             hintText: isPaused ? qsTr("Play") : qsTr("Pause")
             onClicked: {                
-                if (isM1Playing) {
-                    if (isPaused)
-                        _mplayer1.play();
-                    else
-                        _mplayer1.pause();
-                }
-                if (isM2Playing) {
-                    if (isPaused)
-                        _mplayer2.play();
-                    else
-                        _mplayer2.pause();
-                }
+                // if (isM1Playing) {
+                //     if (isPaused)
+                //         _mplayer1.play();
+                //     else
+                //         _mplayer1.pause();
+                // }
+                // if (isM2Playing) {
+                //     if (isPaused)
+                //         _mplayer2.play();
+                //     else
+                //         _mplayer2.pause();
+                // }
                 isPaused = !isPaused;
             }
             onEntered: _toolbar_play.isEntered = true;

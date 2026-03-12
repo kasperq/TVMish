@@ -6,7 +6,7 @@ import QtQuick.Controls.Universal 2.12
 ToolButton {
     id: btn_
 
-    property string btn_text
+    property string btn_text: ""
 //    property int btn_width: 50
 //    property int btn_height: 30
     property int btn_width: 0
@@ -50,12 +50,15 @@ ToolButton {
             fillMode: Image.PreserveAspectFit
             source: ico_path
             visible: ico_path == "" ? false : true
-            verticalAlignment: Image.AlignVCenter
-            horizontalAlignment: /*btn_.text === "" ? Image.AlignLeft : */Image.AlignHCenter
+            // verticalAlignment: Image.AlignVCenter
+            // horizontalAlignment: /*btn_.text === "" ? Image.AlignLeft : */Image.AlignHCenter
         }
         Text {
-            Layout.fillWidth: true
-            Layout.fillHeight: true            
+            visible: btn_text === "" ? false : true
+            Layout.maximumWidth: !visible ? 0 : parent.width
+
+            Layout.fillWidth: btn_text === "" ? false : true
+            Layout.fillHeight: btn_text === "" ? false : true
             wrapMode: Text.WrapAnywhere
             text: btn_.text
             font: btn_.font
@@ -70,14 +73,14 @@ ToolButton {
             horizontalAlignment: ico_path == "" ? Text.AlignHCenter : Text.AlignLeft
             elide: Text.ElideLeft
 
-            visible: btn_.text === "" ? false : true
+
         }
-        Rectangle {
-            id: fillerRect
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-            opacity: 0
-        }
+        // Rectangle {
+        //     id: fillerRect
+        //     Layout.fillHeight: true
+        //     Layout.fillWidth: true
+        //     opacity: 0
+        // }
     }
 
     background: Rectangle {
