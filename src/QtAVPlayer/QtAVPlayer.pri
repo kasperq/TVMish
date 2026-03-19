@@ -16,20 +16,6 @@ CONFIG(debug,debug|release) LIBS += -Lc:\ffmpeg\lib
 CONFIG(release,debug|release) LIBS += -L"$$_PRO_FILE_PWD_/ffmpeg/lib"
 LIBS += -lavcodec -lavformat -lswscale -lavutil -lswresample -lswscale -lavfilter -lavdevice
 
-android {
-INCLUDEPATH += /home/sevizdral/Projects/Drafts/ffmpeg/ffmpegAndr/26/x86_64/include
-CONFIG(debug,debug|release) LIBS += -L/home/sevizdral/Projects/Drafts/ffmpeg/ffmpegAndr/26/x86_64/lib/
-
-ANDROID_EXTRA_LIBS += \
-    /home/sevizdral/Projects/Drafts/ffmpeg/ffmpegAndr/26/x86_64/lib/libavdevice.so \
-    /home/sevizdral/Projects/Drafts/ffmpeg/ffmpegAndr/26/x86_64/lib/libavformat.so \
-    /home/sevizdral/Projects/Drafts/ffmpeg/ffmpegAndr/26/x86_64/lib/libavutil.so \
-    /home/sevizdral/Projects/Drafts/ffmpeg/ffmpegAndr/26/x86_64/lib/libavcodec.so \
-    /home/sevizdral/Projects/Drafts/ffmpeg/ffmpegAndr/26/x86_64/lib/libavfilter.so \
-    /home/sevizdral/Projects/Drafts/ffmpeg/ffmpegAndr/26/x86_64/lib/libswscale.so \
-    /home/sevizdral/Projects/Drafts/ffmpeg/ffmpegAndr/26/x86_64/lib/libswresample.so
-}
-
 PRIVATE_HEADERS += \
     $$PWD/qavcodec_p.h \
     $$PWD/qavcodec_p_p.h \
@@ -156,17 +142,54 @@ android {
     PRIVATE_HEADERS += $$PWD/qavhwdevice_mediacodec_p.h
     SOURCES += $$PWD/qavhwdevice_mediacodec.cpp $$PWD/qavandroidsurfacetexture.cpp
 
-    equals(ANDROID_TARGET_ARCH, armeabi-v7a): \
-        LIBS += -L$$(AVPLAYER_ANDROID_LIB_ARMEABI_V7A)
+    equals(ANDROID_TARGET_ARCH, armeabi-v7a): {
+    #     LIBS += -L$$(AVPLAYER_ANDROID_LIB_ARMEABI_V7A)
+        INCLUDEPATH += /home/sevizdral/ffmpeg/install-android_v7/include/
+        CONFIG(debug,debug|release) LIBS += -L/home/sevizdral/ffmpeg/install-android_v7/lib/
+        ANDROID_EXTRA_LIBS += \
+            /home/sevizdral/ffmpeg/install-android_v7/lib/libavdevice.so \
+            /home/sevizdral/ffmpeg/install-android_v7/lib/libavformat.so \
+            /home/sevizdral/ffmpeg/install-android_v7/lib/libavutil.so \
+            /home/sevizdral/ffmpeg/install-android_v7/lib/libavcodec.so \
+            /home/sevizdral/ffmpeg/install-android_v7/lib/libavfilter.so \
+            /home/sevizdral/ffmpeg/install-android_v7/lib/libswscale.so \
+            /home/sevizdral/ffmpeg/install-android_v7/lib/libswresample.so
+        DEFINES += ARCH_v7a
+    }
 
-    equals(ANDROID_TARGET_ARCH, arm64-v8a): \
-        LIBS += -L$$(AVPLAYER_ANDROID_LIB_ARMEABI_V8A)
+    equals(ANDROID_TARGET_ARCH, arm64-v8a): {
+    #     LIBS += -L$$(AVPLAYER_ANDROID_LIB_ARMEABI_V8A)
+        INCLUDEPATH += /home/sevizdral/ffmpeg/install-android_v8/include/
+        CONFIG(debug,debug|release) LIBS += -L/home/sevizdral/ffmpeg/install-android_v8/lib/
+        ANDROID_EXTRA_LIBS += \
+            /home/sevizdral/ffmpeg/install-android_v8/lib/libavdevice.so \
+            /home/sevizdral/ffmpeg/install-android_v8/lib/libavformat.so \
+            /home/sevizdral/ffmpeg/install-android_v8/lib/libavutil.so \
+            /home/sevizdral/ffmpeg/install-android_v8/lib/libavcodec.so \
+            /home/sevizdral/ffmpeg/install-android_v8/lib/libavfilter.so \
+            /home/sevizdral/ffmpeg/install-android_v8/lib/libswscale.so \
+            /home/sevizdral/ffmpeg/install-android_v8/lib/libswresample.so
+        DEFINES += ARCH_v8
+    }
 
-    equals(ANDROID_TARGET_ARCH, x86): \
-        LIBS += -L$$(AVPLAYER_ANDROID_LIB_X86)
+    # equals(ANDROID_TARGET_ARCH, x86): \
+    #     LIBS += -L$$(AVPLAYER_ANDROID_LIB_X86)
 
-    equals(ANDROID_TARGET_ARCH, x86_64): \
-        LIBS += -L$$(AVPLAYER_ANDROID_LIB_X86_64)
+    equals(ANDROID_TARGET_ARCH, x86_64): {
+        # LIBS += -L$$(AVPLAYER_ANDROID_LIB_X86_64)
+        INCLUDEPATH += /home/sevizdral/ffmpeg/install-android_x64/include/
+        CONFIG(debug,debug|release) LIBS += -L/home/sevizdral/ffmpeg/install-android_x64/lib/
+        ANDROID_EXTRA_LIBS += \
+            /home/sevizdral/ffmpeg/install-android_x64/lib/libavdevice.so \
+            /home/sevizdral/ffmpeg/install-android_x64/lib/libavformat.so \
+            /home/sevizdral/ffmpeg/install-android_x64/lib/libavutil.so \
+            /home/sevizdral/ffmpeg/install-android_x64/lib/libavcodec.so \
+            /home/sevizdral/ffmpeg/install-android_x64/lib/libavfilter.so \
+            /home/sevizdral/ffmpeg/install-android_x64/lib/libswscale.so \
+            /home/sevizdral/ffmpeg/install-android_x64/lib/libswresample.so
+        DEFINES += ARCH_X86_64
+    }
 }
+
 
 HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS
